@@ -1,0 +1,3070 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚡ CyberFinance 2026 Enterprise — Command Center, Cartões, Investimentos & PostgreSQL</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- EmailJS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <!-- Ícones das categorias (Lucide, SVG). Sem internet: cai para o emoji de cada categoria -->
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            obsidian: '#0B0F19',
+            panel: '#111827',
+            panelLight: '#1E293B',
+            neonCyan: '#00F5D4',
+            neonSky: '#38BDF8',
+            neonPurple: '#A855F7',
+            neonGreen: '#10B981',
+            neonAmber: '#F59E0B',
+            neonRose: '#F43F5E',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0F19;
+      color: #F8FAFC;
+      background-image:
+        radial-gradient(at 0% 0%, rgba(0, 245, 212, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.09) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(56, 189, 248, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+    .glass-card {
+      background: rgba(17, 24, 39, 0.86);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(56, 189, 248, 0.16);
+      box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.45);
+    }
+    .neon-border-cyan { border-top: 3px solid #00F5D4; }
+    .neon-border-sky { border-top: 3px solid #38BDF8; }
+    .neon-border-green { border-top: 3px solid #10B981; }
+    .neon-border-purple { border-top: 3px solid #A855F7; }
+    .neon-border-rose { border-top: 3px solid #F43F5E; }
+    .neon-border-amber { border-top: 3px solid #F59E0B; }
+    /* chip de categoria: ícone num quadrado com a cor da categoria */
+    .cat-ico { --c: #94A3B8; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 26px; height: 26px; border-radius: 8px; color: var(--c);
+      background: color-mix(in srgb, var(--c) 16%, transparent); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); }
+    .cat-ico svg { width: 15px; height: 15px; stroke-width: 2.2; }
+    .cat-ico.lg { width: 40px; height: 40px; border-radius: 12px; }
+    .cat-ico.lg svg { width: 21px; height: 21px; }
+    .cat-ico .emoji { font-size: 13px; line-height: 1; }
+    .cat-ico.lg .emoji { font-size: 19px; }
+    .cat-chip { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .cat-card { transition: transform .15s ease, border-color .15s ease; }
+    .cat-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--c) 55%, transparent); }
+    .bar-track { height: 6px; border-radius: 999px; background: rgba(148, 163, 184, .14); overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 999px; transition: width .4s ease; }
+    .ciclo-dot { width: 6px; height: 6px; border-radius: 999px; background: #00F5D4; box-shadow: 0 0 8px #00F5D4; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0B0F19; }
+    ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00F5D4; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-neonCyan selection:text-obsidian">
+
+  <!-- ===================================================================== -->
+  <!-- TOP HEADER & NAVIGATION                                               -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-30 glass-card border-b border-slate-800/90 px-4 sm:px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-neonCyan via-neonSky to-neonPurple flex items-center justify-center text-obsidian font-extrabold text-xl shadow-lg shadow-neonCyan/25">
+          ⚡
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-wider text-neonCyan">CYBERFINANCE 2026</h1>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-neonPurple/20 text-neonPurple border border-neonPurple/40 font-mono font-semibold">ENTERPRISE v6</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Controle Anual, Radar de Vencimentos, Cartões Parcelados, Investimentos & PostgreSQL</p>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="flex flex-wrap items-center gap-1 bg-obsidian/90 p-1.5 rounded-xl border border-slate-800">
+        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-neonCyan text-obsidian shadow-md shadow-neonCyan/20 flex items-center gap-1.5">
+          📊 Dashboard Geral
+        </button>
+        <button onclick="switchTab('lancamentos')" id="tab-lancamentos" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+          📅 Lançamentos & Lote
+        </button>
+        <button onclick="switchTab('cartoes')" id="tab-cartoes" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+          💳 Cartões & Compras
+          <span id="badge-cards-count" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-neonAmber/20 text-neonAmber border border-neonAmber/40">7</span>
+        </button>
+        <button onclick="switchTab('investimentos')" id="tab-investimentos" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+          💎 Investimentos
+        </button>
+        <button onclick="switchTab('database')" id="tab-database" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+          🐘 PostgreSQL & Deploy
+          <span id="pg-status-dot" class="w-2 h-2 rounded-full bg-neonAmber"></span>
+        </button>
+        <button onclick="switchTab('config')" id="tab-config" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+          ✉️ Configurar E-mail
+        </button>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button onclick="exportarCSV()" title="Exportar Mês Atual para Excel/CSV" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-neonSky border border-neonSky/30 text-xs font-semibold flex items-center gap-1.5 transition-all">
+          📥 CSV
+        </button>
+        <button onclick="dispararResumoAlertasEmail()" class="px-3.5 py-2 rounded-xl bg-neonRose/20 hover:bg-neonRose/30 text-neonRose border border-neonRose/40 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-lg shadow-neonRose/10">
+          🚨 Disparar Radar E-mail
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- 12-MONTH SELECTOR BAR (JAN TO DEZ)                                    -->
+  <!-- ===================================================================== -->
+  <div class="bg-panel/95 border-b border-slate-800/80 px-4 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 overflow-x-auto">
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="text-xs font-mono uppercase tracking-wider text-slate-400" title="Cada ciclo vai do dia de virada do mês anterior até a véspera do dia de virada do mês do ciclo (ajuste na aba Configurar)">Ciclo financeiro 2026:</span>
+      </div>
+      <div id="month-buttons-container" class="flex items-center gap-1.5 py-0.5"></div>
+      <div class="text-xs text-slate-400 font-mono shrink-0 hidden lg:flex items-center gap-3">
+        <span>Modo: <strong id="storage-mode-label" class="text-neonAmber">Híbrido (Local + API)</strong></span>
+        <span>•</span>
+        <span>Alertas: <strong id="header-email-display" class="text-neonCyan">jcnogueira.oliveira@gmail.com</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN CONTENT                                                          -->
+  <!-- ===================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- NOTIFICATION TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 max-w-md"></div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 1: EDITAR LANÇAMENTO MENSAL                                     -->
+    <!-- ===================================================================== -->
+    <div id="modal-editar" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="glass-card rounded-2xl max-w-xl w-full p-6 neon-border-amber shadow-2xl space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div>
+            <h3 class="text-base font-bold uppercase tracking-wider text-neonAmber flex items-center gap-2">
+              ✏️ Editar Lançamento Financeiro
+            </h3>
+            <p class="text-xs text-slate-400">Altere valores, datas, status ou transfira para outro mês</p>
+          </div>
+          <button onclick="fecharModalEdicao()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold">✕</button>
+        </div>
+
+        <form id="form-editar-lancamento" onsubmit="salvarEdicaoLancamento(event)" class="space-y-4">
+          <input type="hidden" id="edit-id" />
+          <input type="hidden" id="edit-mes-origem" />
+
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Descrição do Lançamento</label>
+            <input type="text" id="edit-desc" required class="w-full bg-obsidian border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-neonAmber focus:outline-none" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Categoria</label>
+              <select id="edit-cat" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-neonAmber focus:outline-none">
+                <option value="Moradia e Condomínio">Moradia e Condomínio</option>
+                <option value="Energia, Água, Gás e Internet">Energia, Água, Gás e Internet</option>
+                <option value="Supermercado e Padaria">Supermercado e Padaria</option>
+                <option value="Delivery e Restaurantes">Delivery e Restaurantes</option>
+                <option value="Transporte, Combustível e Uber">Transporte, Combustível e Uber</option>
+                <option value="Cartão de Crédito / Assinaturas">Cartão de Crédito / Assinaturas</option>
+                <option value="Saúde e Farmácia">Saúde e Farmácia</option>
+                <option value="Educação, Cursos e Certificações">Educação, Cursos e Certificações</option>
+                <option value="Lazer, Viagens e Eventos">Lazer, Viagens e Eventos</option>
+                <option value="Aporte em Investimentos">Aporte em Investimentos</option>
+                <option value="Salário e Pró-Labore">Salário e Pró-Labore</option>
+                <option value="Consultoria, Aulas e Projetos">Consultoria, Aulas e Projetos</option>
+                <option value="Rendimentos e Dividendos">Rendimentos e Dividendos</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Tipo</label>
+              <select id="edit-tipo" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-neonAmber focus:outline-none">
+                <option value="Despesa">Despesa</option>
+                <option value="Receita">Receita</option>
+                <option value="Investimento">Investimento</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Valor (R$)</label>
+              <input type="number" step="0.01" id="edit-valor" required class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono focus:border-neonAmber focus:outline-none" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Data de Vencimento</label>
+              <input type="date" id="edit-venc" required class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono focus:border-neonAmber focus:outline-none" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Status</label>
+              <select id="edit-status" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-neonAmber focus:outline-none">
+                <option value="Pendente">⏳ Pendente</option>
+                <option value="Pago">✓ Pago</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Mês da Planilha (Transferir se desejar)</label>
+              <select id="edit-mes-destino" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-neonCyan font-mono focus:border-neonAmber focus:outline-none"></select>
+            </div>
+            <div class="flex items-end pb-1">
+              <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                <input type="checkbox" id="edit-disparar-email" class="rounded bg-obsidian border-slate-700 text-neonAmber focus:ring-0" />
+                Enviar atualização por e-mail ao salvar
+              </label>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+            <button type="button" onclick="fecharModalEdicao()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">Cancelar</button>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-neonAmber text-obsidian font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-neonAmber/20">💾 Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 2: EDITAR COMPRA DE CARTÃO                                      -->
+    <!-- ===================================================================== -->
+    <div id="modal-editar-compra-cartao" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="glass-card rounded-2xl max-w-lg w-full p-6 neon-border-purple shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div>
+            <h3 class="text-base font-bold uppercase tracking-wider text-neonPurple">💳 Editar Compra do Cartão</h3>
+            <p class="text-xs text-slate-400">Ajuste a descrição, cartão, valor da parcela ou andamento das parcelas</p>
+          </div>
+          <button onclick="fecharModalCompraCartao()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold">✕</button>
+        </div>
+        <form onsubmit="salvarEdicaoCompraCartao(event)" class="space-y-3">
+          <input type="hidden" id="edit-cc-id" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Cartão</label>
+              <select id="edit-cc-cartao" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"></select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Categoria da Compra</label>
+              <select id="edit-cc-cat" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                <option value="IA / Software & Cloud">IA / Software & Cloud</option>
+                <option value="Casa, Obras & Leroy">Casa, Obras & Leroy</option>
+                <option value="Supermercado & Atacado">Supermercado & Atacado</option>
+                <option value="Restaurantes & iFood">Restaurantes & iFood</option>
+                <option value="Eletrônicos & Hardware">Eletrônicos & Hardware</option>
+                <option value="Viagens & Passagens">Viagens & Passagens</option>
+                <option value="Mobilidade & Uber">Mobilidade & Uber</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Item / Estabelecimento (Ex: AI Gemini, Compra Leroy)</label>
+            <input type="text" id="edit-cc-item" required class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Valor da Parcela (R$)</label>
+              <input type="number" step="0.01" id="edit-cc-valor" required class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Parcela Atual</label>
+              <input type="number" min="1" max="120" id="edit-cc-parc-atual" required class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Total de Parcelas</label>
+              <input type="number" min="1" max="120" id="edit-cc-parc-total" required class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono" />
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <button type="button" onclick="fecharModalCompraCartao()" class="px-4 py-2 rounded-xl bg-slate-800 text-xs text-slate-300">Cancelar</button>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-neonPurple text-white font-bold text-xs">💾 Salvar Compra</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 3: CONFIRMAÇÃO DE EXCLUSÃO EM LOTE / POR MÊS                    -->
+    <!-- ===================================================================== -->
+    <div id="modal-confirmar-exclusao" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="glass-card rounded-2xl max-w-md w-full p-6 neon-border-rose shadow-2xl space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-neonRose/20 border border-neonRose/40 flex items-center justify-center text-neonRose text-xl">🗑️</div>
+          <div>
+            <h3 id="confirm-modal-title" class="text-base font-bold text-white">Confirmar Exclusão</h3>
+            <p id="confirm-modal-subtitle" class="text-xs text-slate-400">Esta ação removerá os lançamentos selecionados.</p>
+          </div>
+        </div>
+        <div id="confirm-modal-body" class="bg-obsidian/80 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 font-mono max-h-40 overflow-y-auto"></div>
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button onclick="fecharModalConfirmacao()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">Cancelar</button>
+          <button id="btn-confirm-execute" class="px-5 py-2 rounded-xl bg-neonRose text-white font-bold text-xs hover:opacity-90 transition-all shadow-lg shadow-neonRose/30">
+            Sim, Apagar Agora
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 1: DASHBOARD EXECUTIVO & GRÁFICOS                                -->
+    <!-- ===================================================================== -->
+    <section id="view-dashboard" class="space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="glass-card rounded-2xl p-5 neon-border-green">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Receitas (<span class="active-month-label">Out</span>)</span>
+            <span class="text-neonGreen text-lg">▲</span>
+          </div>
+          <div id="kpi-receita-mes" class="text-2xl font-bold font-mono text-neonGreen mt-2">R$ 0,00</div>
+          <div id="kpi-receita-anual" class="text-xs text-slate-400 mt-1">Acumulado 2026: R$ 0,00</div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 neon-border-cyan">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Despesas (<span class="active-month-label">Out</span>)</span>
+            <span class="text-neonSky text-lg">▼</span>
+          </div>
+          <div id="kpi-despesa-mes" class="text-2xl font-bold font-mono text-neonSky mt-2">R$ 0,00</div>
+          <div id="kpi-despesa-paga" class="text-xs text-slate-400 mt-1">Já Quitado: R$ 0,00</div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 neon-border-purple">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Patrimônio & Aportes</span>
+            <span class="text-neonPurple text-lg">💎</span>
+          </div>
+          <div id="kpi-patrimonio" class="text-2xl font-bold font-mono text-neonPurple mt-2">R$ 0,00</div>
+          <div id="kpi-aportes-mes" class="text-xs text-slate-400 mt-1">Aporte no Mês: R$ 0,00</div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 neon-border-rose">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Alerta Crítico Vencimentos</span>
+            <span class="text-neonRose text-lg animate-bounce">🚨</span>
+          </div>
+          <div id="kpi-alerta-valor" class="text-2xl font-bold font-mono text-neonRose mt-2">R$ 0,00</div>
+          <div id="kpi-alerta-qtd" class="text-xs text-neonAmber mt-1">0 boleto(s) exigem atenção imediata</div>
+        </div>
+      </div>
+
+      <!-- CICLO FINANCEIRO + GASTOS COM IT -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="glass-card rounded-2xl p-5 lg:col-span-2 neon-border-sky">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-neonSky">🗓️ Ciclo financeiro <span class="active-month-label">Out</span>/2026</h2>
+              <p id="ciclo-periodo" class="text-xs text-slate-400 mt-0.5">-</p>
+            </div>
+            <span id="ciclo-status" class="text-[11px] font-mono px-2.5 py-1 rounded bg-slate-800 text-slate-300">-</span>
+          </div>
+          <div class="mt-4">
+            <div class="flex justify-between text-[11px] text-slate-400 mb-1"><span id="ciclo-dias-lbl">-</span><span id="ciclo-pct-lbl">-</span></div>
+            <div class="bar-track"><div id="ciclo-bar" class="bar-fill bg-gradient-to-r from-neonSky to-neonCyan" style="width:0%"></div></div>
+          </div>
+          <div id="ciclo-metricas" class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4"></div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5" style="border-top:3px solid #22D3EE">
+          <div class="flex items-center gap-3">
+            <span id="it-ico" class="cat-ico lg" style="--c:#22D3EE"></span>
+            <div>
+              <h2 class="text-sm font-bold uppercase tracking-wider" style="color:#22D3EE">Gastos com IT</h2>
+              <p class="text-[11px] text-slate-400">Lançamentos + compras no cartão (software, cloud, hardware)</p>
+            </div>
+          </div>
+          <div id="it-total" class="text-2xl font-bold font-mono text-white mt-3">R$ 0,00</div>
+          <div id="it-sub" class="text-xs text-slate-400 mt-0.5">-</div>
+          <div class="bar-track mt-2"><div id="it-bar" class="bar-fill" style="width:0%;background:#22D3EE"></div></div>
+          <div id="it-itens" class="mt-3 space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+
+      <!-- CATEGORIAS DO CICLO (ÍCONES) -->
+      <div class="glass-card rounded-2xl p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-neonCyan">🧩 Para onde foi o dinheiro no ciclo <span class="active-month-label">Out</span></h2>
+            <p class="text-xs text-slate-400">Despesas por categoria, já abrindo as faturas de cartão nos itens comprados (sem contar duas vezes)</p>
+          </div>
+          <span id="cat-grid-total" class="text-xs font-mono px-2.5 py-1 rounded bg-slate-800 text-slate-300">-</span>
+        </div>
+        <div id="grid-categorias" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+      </div>
+
+      <!-- CHARTS ROW 1 -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="glass-card rounded-2xl p-5 lg:col-span-2 flex flex-col justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-neonCyan">⚡ Telemetria Anual (Jan a Dez 2026)</h2>
+              <p class="text-xs text-slate-400">Comparativo de Receitas, Despesas, Investimentos e Linha de Saldo Livre</p>
+            </div>
+            <span class="text-xs font-mono px-2.5 py-1 rounded bg-slate-800 text-slate-300">Interativo • Tempo Real</span>
+          </div>
+          <div class="relative h-72 w-full">
+            <canvas id="chartAnualCombo"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <div class="mb-4">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-neonCyan">🎯 Radar de Vencimentos (<span class="active-month-label">Out</span>)</h2>
+            <p class="text-xs text-slate-400">Distribuição financeira por status de alerta</p>
+          </div>
+          <div class="relative h-64 w-full flex items-center justify-center">
+            <canvas id="chartStatusDonut"></canvas>
+          </div>
+          <div id="donut-summary-legend" class="mt-3 grid grid-cols-2 gap-2 text-xs"></div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW 2 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-card rounded-2xl p-5">
+          <div class="mb-4">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-neonCyan">📊 Gastos por Categoria vs. Meta (<span class="active-month-label">Out</span>)</h2>
+            <p class="text-xs text-slate-400">Gasto real do ciclo (com as compras de cartão nas suas categorias) contra a meta; vermelho = estourou</p>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="chartCategoriasBar"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-neonRose">🔔 Contas Pendentes & Alertas Rápidos</h2>
+              <p class="text-xs text-slate-400">Pague, edite ou dispare avisos individuais com 1 clique</p>
+            </div>
+            <div class="flex gap-3">
+              <button onclick="switchTab('cartoes')" class="text-xs text-neonAmber hover:underline">💳 Cartões →</button>
+              <button onclick="switchTab('lancamentos')" class="text-xs text-neonCyan hover:underline">📅 Ver todas →</button>
+            </div>
+          </div>
+          <div id="dashboard-alert-list" class="flex-1 overflow-y-auto max-h-64 space-y-2.5 pr-1"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 2: LANÇAMENTOS MENSAIS & EXCLUSÃO POR MÊS / EM LOTE              -->
+    <!-- ===================================================================== -->
+    <section id="view-lancamentos" class="space-y-6 hidden">
+      <!-- PAINEL DE CONTROLE DE EXCLUSÃO E SELEÇÃO POR MÊS -->
+      <div class="glass-card rounded-2xl p-5 neon-border-rose">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-neonRose flex items-center gap-2">
+              🗑️ Gerenciador de Seleção e Limpeza por Mês
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Selecione alguns lançamentos na tabela abaixo ou escolha um mês específico para apagar todos os registros de uma vez.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 bg-obsidian/90 p-2.5 rounded-xl border border-slate-800">
+            <span class="text-xs text-slate-300 font-medium">Escolher Mês:</span>
+            <select id="select-mes-limpeza" onchange="selecionarMes(this.value)" class="bg-panel border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-neonCyan font-mono font-bold focus:outline-none"></select>
+            <button onclick="solicitarLimpezaMesInteiro()" class="px-3.5 py-1.5 rounded-lg bg-neonRose/20 hover:bg-neonRose text-neonRose hover:text-white border border-neonRose/50 text-xs font-bold transition-all">
+              🔥 Apagar TODOS do Mês
+            </button>
+            <button onclick="solicitarLimpezaPorFiltroMes('Pago')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-all">
+              🧹 Apagar Só Pagos do Mês
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="selecionarTodosVisiveis(true)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700">☑️ Marcar Todos do Mês</button>
+            <button onclick="selecionarPorCritero('Pendente')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-neonAmber border border-slate-700">⏳ Marcar Só Pendentes</button>
+            <button onclick="selecionarPorCritero('Pago')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-neonGreen border border-slate-700">✓ Marcar Só Pagos</button>
+            <button onclick="selecionarTodosVisiveis(false)" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-400 border border-slate-800">⬜ Desmarcar Todos</button>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span id="contador-selecionados" class="text-xs font-mono text-neonCyan font-semibold">0 selecionado(s)</span>
+            <button id="btn-quitar-selecionados" onclick="quitarSelecionadosEmLote()" disabled class="px-3.5 py-1.5 rounded-xl bg-neonGreen/20 text-neonGreen border border-neonGreen/40 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-neonGreen/30 transition-all">
+              ✓ Marcar Selecionados como Pago
+            </button>
+            <button id="btn-apagar-selecionados" onclick="solicitarExclusaoSelecionados()" disabled class="px-4 py-1.5 rounded-xl bg-neonRose text-white text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-all shadow-lg shadow-neonRose/20">
+              🗑️ Apagar Selecionados (<span id="badge-qtd-del">0</span>)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Entry Form (With Auto-Propagate to Next Months!) -->
+      <div class="glass-card rounded-2xl p-5 neon-border-cyan">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-neonCyan mb-4">
+          ➕ Novo Lançamento Geral em <span class="active-month-label text-white">Out</span>/2026
+        </h2>
+        <form id="form-novo-lancamento" onsubmit="adicionarLancamento(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
+          <div class="lg:col-span-2">
+            <label class="text-xs text-slate-400 block mb-1">Descrição</label>
+            <input type="text" id="inp-desc" required placeholder="Ex: Conta de Luz, Salário, Aporte..." class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-neonCyan focus:outline-none" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Categoria</label>
+            <select id="inp-cat" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-neonCyan focus:outline-none">
+              <option value="Moradia e Condomínio">Moradia e Condomínio</option>
+              <option value="Energia, Água, Gás e Internet">Energia, Água, Gás e Internet</option>
+              <option value="Supermercado e Padaria">Supermercado e Padaria</option>
+              <option value="Delivery e Restaurantes">Delivery e Restaurantes</option>
+              <option value="Transporte, Combustível e Uber">Transporte, Combustível e Uber</option>
+              <option value="Cartão de Crédito / Assinaturas">Cartão de Crédito / Assinaturas</option>
+              <option value="Saúde e Farmácia">Saúde e Farmácia</option>
+              <option value="Educação, Cursos e Certificações">Educação, Cursos e Certificações</option>
+              <option value="Lazer, Viagens e Eventos">Lazer, Viagens e Eventos</option>
+              <option value="Aporte em Investimentos">Aporte em Investimentos</option>
+              <option value="Salário e Pró-Labore">Salário e Pró-Labore</option>
+              <option value="Consultoria, Aulas e Projetos">Consultoria, Aulas e Projetos</option>
+              <option value="Rendimentos e Dividendos">Rendimentos e Dividendos</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Tipo</label>
+            <select id="inp-tipo" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-neonCyan focus:outline-none">
+              <option value="Despesa">Despesa</option>
+              <option value="Receita">Receita</option>
+              <option value="Investimento">Investimento</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Valor (R$)</label>
+            <input type="number" step="0.01" id="inp-valor" required placeholder="0.00" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono focus:border-neonCyan focus:outline-none" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Vencimento</label>
+            <input type="date" id="inp-venc" required class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono focus:border-neonCyan focus:outline-none" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Repetir / Meses</label>
+            <select id="inp-repetir-meses" class="w-full bg-obsidian border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-neonCyan font-mono focus:border-neonCyan focus:outline-none">
+              <option value="1">Só neste mês (1x)</option>
+              <option value="2">Por 2 meses</option>
+              <option value="3">Por 3 meses</option>
+              <option value="6">Por 6 meses</option>
+              <option value="12">Até Dezembro</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2 lg:col-span-7 flex flex-wrap justify-between items-center gap-3 pt-2 border-t border-slate-800/80">
+            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" id="inp-ja-pago" class="rounded bg-obsidian border-slate-700 text-neonCyan focus:ring-0" />
+              Já lançar como Pago no mês atual (e disparar confirmação por e-mail)
+            </label>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-neonCyan text-obsidian font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-neonCyan/20">
+              + Adicionar Lançamento
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Transactions Table -->
+      <div class="glass-card rounded-2xl p-5 overflow-hidden">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-neonCyan">
+              📋 Tabela de Lançamentos — <span class="active-month-label">Out</span>/2026
+            </h2>
+            <p class="text-xs text-slate-400">As faturas unificadas pela aba de Cartões aparecem aqui automaticamente com o ícone 💳.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" id="busca-lancamento" oninput="renderAll()" placeholder="🔍 Buscar descrição..." class="bg-obsidian border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-neonCyan focus:outline-none" />
+            <select id="filtro-status" onchange="renderAll()" class="bg-obsidian border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200">
+              <option value="TODOS">Todos os Status</option>
+              <option value="ALERTA">Apenas em Alerta (Atrasado / Vencendo)</option>
+              <option value="Pendente">Apenas Pendentes</option>
+              <option value="Pago">Apenas Pagos</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <!-- min-w: em tela estreita a tabela rola na horizontal em vez de espremer/cortar o Radar e as Ações -->
+          <table class="w-full min-w-[1080px] text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-800 text-xs font-mono uppercase text-neonCyan bg-slate-900/60 whitespace-nowrap">
+                <th class="py-3 px-3 w-10 text-center">
+                  <input type="checkbox" id="chk-select-all-header" onchange="selecionarTodosVisiveis(this.checked)" class="w-4 h-4 rounded bg-obsidian border-slate-600 text-neonCyan focus:ring-0 cursor-pointer" />
+                </th>
+                <th class="py-3 px-3">Descrição</th>
+                <th class="py-3 px-3">Categoria</th>
+                <th class="py-3 px-3 text-center">Tipo</th>
+                <th class="py-3 px-3 text-right">Valor</th>
+                <th class="py-3 px-3 text-center">Vencimento</th>
+                <th class="py-3 px-3 text-center">Status</th>
+                <th class="py-3 px-3 text-center min-w-[170px]">Radar de Alerta</th>
+                <th class="py-3 px-3 text-center min-w-[200px]">Ações & E-mail</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-lancamentos" class="divide-y divide-slate-800/60 text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 3: DASHBOARD DE CARTÕES, PARCELAS & UNIFICAÇÃO DE FATURA         -->
+    <!-- ===================================================================== -->
+    <section id="view-cartoes" class="space-y-6 hidden">
+
+      <!-- 4 KPI CARDS DO DASHBOARD DE CARTÕES -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="glass-card rounded-2xl p-5 neon-border-amber">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Faturas (<span class="active-month-label">Out</span>)</span>
+            <span class="text-neonAmber text-lg">💳</span>
+          </div>
+          <div id="cc-kpi-total-mes" class="text-2xl font-bold font-mono text-neonAmber mt-2">R$ 0,00</div>
+          <div id="cc-kpi-qtd-itens" class="text-xs text-slate-400 mt-1">0 compras registradas neste mês</div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 neon-border-purple">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Saldo Futuro em Parcelas</span>
+            <span class="text-neonPurple text-lg">⏳</span>
+          </div>
+          <div id="cc-kpi-saldo-futuro" class="text-2xl font-bold font-mono text-neonPurple mt-2">R$ 0,00</div>
+          <div id="cc-kpi-parcelas-ativas" class="text-xs text-slate-400 mt-1">Soma das parcelas restantes</div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 neon-border-cyan">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Cartão Maior Gasto (<span class="active-month-label">Out</span>)</span>
+            <span class="text-neonCyan text-lg">🏆</span>
+          </div>
+          <div id="cc-kpi-maior-cartao" class="text-xl font-bold font-mono text-neonCyan mt-2 truncate">-</div>
+          <div id="cc-kpi-maior-valor" class="text-xs text-slate-400 mt-1">R$ 0,00 na fatura atual</div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 neon-border-green">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Unificação p/ Lançamentos</span>
+            <span class="text-neonGreen text-lg">🔗</span>
+          </div>
+          <div class="mt-2">
+            <button onclick="unificarTodosCartoesMes()" class="w-full py-2 px-3 rounded-xl bg-neonGreen text-obsidian font-bold text-xs hover:opacity-90 transition-all shadow-lg shadow-neonGreen/20">
+              🔗 Unificar Todos os Cartões em <span class="active-month-label">Out</span>
+            </button>
+          </div>
+          <div class="text-[11px] text-slate-400 mt-1.5 text-center">Soma os itens por cartão e gera a fatura única</div>
+        </div>
+      </div>
+
+      <!-- CARDS VISUAIS POR CARTÃO (SOMA + LIMITE + BOTÃO UNIFICAR INDIVIDUAL) -->
+      <div class="glass-card rounded-2xl p-5 neon-border-cyan">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-neonCyan">
+              💳 Resumo por Cartão & Botão de Unificação de Fatura (<span class="active-month-label">Out</span>/2026)
+            </h2>
+            <p class="text-xs text-slate-400">
+              Veja a soma exata de cada cartão (ex: <strong>Cartão Interempresas: R$ 100 AI Gemini + R$ 200 Compra Leroy...</strong>) e clique em <strong>"🔗 Unificar Fatura"</strong>.
+            </p>
+          </div>
+          <form onsubmit="adicionarNovoCartao(event)" class="flex flex-wrap items-center gap-2">
+            <input type="text" id="novo-cartao-nome" required placeholder="Novo Cartão (Ex: C6 Carbon)" class="bg-obsidian border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:border-neonCyan focus:outline-none" />
+            <input type="number" id="novo-cartao-venc" required min="1" max="31" placeholder="Dia Venc (10)" class="w-28 bg-obsidian border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:border-neonCyan focus:outline-none" />
+            <button type="submit" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-neonCyan border border-neonCyan/40 text-xs font-semibold">+ Cartão</button>
+          </form>
+        </div>
+
+        <div id="grid-resumo-cartoes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+      </div>
+
+      <!-- GRÁFICOS DO DASHBOARD DE CARTÕES -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-card rounded-2xl p-5">
+          <div class="mb-3">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-neonAmber">📊 Fatura Atual vs. Saldo Futuro Restante por Cartão</h3>
+            <p class="text-xs text-slate-400">Comparativo entre o que vence neste mês e o que falta das próximas parcelas</p>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="chartCartoesBar"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5">
+          <div class="mb-3">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-neonPurple">🛍️ Compras do Cartão por Categoria (<span class="active-month-label">Out</span>)</h3>
+            <p class="text-xs text-slate-400">Distribuição dos gastos nos cartões de crédito</p>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="chartCartoesCategoriasDonut"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORMULÁRIO PARA LANÇAR COMPRA NO CARTÃO (COM PROPAGAÇÃO AUTOMÁTICA DE PARCELAS!) -->
+      <div class="glass-card rounded-2xl p-5 neon-border-purple">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-neonPurple mb-3">
+          ➕ Lançar Compra ou Parcelamento no Cartão (<span class="active-month-label text-white">Out</span>/2026)
+        </h2>
+        <form id="form-nova-compra-cartao" onsubmit="adicionarCompraCartao(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
+          <div class="lg:col-span-2">
+            <label class="text-xs text-slate-400 block mb-1">Selecionar Cartão</label>
+            <select id="cc-inp-cartao" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-neonCyan font-semibold focus:border-neonPurple focus:outline-none"></select>
+          </div>
+          <div class="lg:col-span-2">
+            <label class="text-xs text-slate-400 block mb-1">Item / Compra (Ex: AI Gemini, Compra Leroy)</label>
+            <input type="text" id="cc-inp-item" required placeholder="Ex: AI Gemini, Compra Leroy..." class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-neonPurple focus:outline-none" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Categoria</label>
+            <select id="cc-inp-cat" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-neonPurple focus:outline-none">
+              <option value="IA / Software & Cloud">IA / Software & Cloud</option>
+              <option value="Casa, Obras & Leroy">Casa, Obras & Leroy</option>
+              <option value="Supermercado & Atacado">Supermercado & Atacado</option>
+              <option value="Restaurantes & iFood">Restaurantes & iFood</option>
+              <option value="Eletrônicos & Hardware">Eletrônicos & Hardware</option>
+              <option value="Viagens & Passagens">Viagens & Passagens</option>
+              <option value="Mobilidade & Uber">Mobilidade & Uber</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Valor da Parcela (R$)</label>
+            <input type="number" step="0.01" id="cc-inp-valor" required placeholder="100.00" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono focus:border-neonPurple focus:outline-none" />
+          </div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Parc. Atual</label>
+              <input type="number" min="1" max="120" id="cc-inp-parc-atual" value="1" required class="w-full bg-obsidian border border-slate-700 rounded-xl px-2.5 py-2 text-sm text-white font-mono text-center focus:border-neonPurple focus:outline-none" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Total Parc.</label>
+              <input type="number" min="1" max="120" id="cc-inp-parc-total" value="1" required class="w-full bg-obsidian border border-slate-700 rounded-xl px-2.5 py-2 text-sm text-white font-mono text-center focus:border-neonPurple focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="sm:col-span-2 lg:col-span-7 flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
+            <div class="flex flex-wrap items-center gap-4">
+              <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                <input type="checkbox" id="cc-inp-auto-unificar" checked class="rounded bg-obsidian border-slate-700 text-neonPurple focus:ring-0" />
+                Unificar automaticamente na Fatura deste cartão na aba de Lançamentos
+              </label>
+              <label class="flex items-center gap-2 text-xs text-neonCyan cursor-pointer">
+                <input type="checkbox" id="cc-inp-propagar-parcelas" checked class="rounded bg-obsidian border-slate-700 text-neonCyan focus:ring-0" />
+                Propagar parcelas restantes automaticamente para os próximos meses de 2026
+              </label>
+            </div>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-neonPurple text-white font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-neonPurple/20">
+              + Adicionar Compra ao Cartão
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TABELA DETALHADA DE COMPRAS E PARCELAS FALTANTES -->
+      <div class="glass-card rounded-2xl p-5 overflow-hidden">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-neonCyan">
+              🧾 Detalhamento de Compras & Controle de Parcelas (<span class="active-month-label">Out</span>/2026)
+            </h2>
+            <p class="text-xs text-slate-400">Acompanhe quantas parcelas faltam para cada item e o saldo restante futuro.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="filtro-cartao-tabela" onchange="renderAll()" class="bg-obsidian border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-neonCyan font-semibold">
+              <option value="TODOS">Todos os Cartões</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-800 text-xs font-mono uppercase text-neonCyan bg-slate-900/60">
+                <th class="py-3 px-3">Cartão</th>
+                <th class="py-3 px-3">Item / Compra</th>
+                <th class="py-3 px-3">Categoria</th>
+                <th class="py-3 px-3 text-right">Valor no Mês</th>
+                <th class="py-3 px-3 text-center">Progresso Parcelas</th>
+                <th class="py-3 px-3 text-center">Quantas Faltam?</th>
+                <th class="py-3 px-3 text-right">Saldo Restante Futuro</th>
+                <th class="py-3 px-3 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-compras-cartao" class="divide-y divide-slate-800/60 text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 4: TERMINAL DE INVESTIMENTOS                                     -->
+    <!-- ===================================================================== -->
+    <section id="view-investimentos" class="space-y-6 hidden">
+      <div class="glass-card rounded-2xl p-5 neon-border-purple">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-neonPurple mb-3">➕ Adicionar Novo Ativo à Carteira</h2>
+        <form id="form-novo-ativo" onsubmit="adicionarAtivoInvestimento(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Nome / Código do Ativo</label>
+            <input type="text" id="inv-nome" required placeholder="Ex: Tesouro IPCA+, HGLG11..." class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:border-neonPurple focus:outline-none" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Classe de Ativo</label>
+            <select id="inv-classe" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:border-neonPurple focus:outline-none">
+              <option value="Renda Fixa Pós (CDI/Selic)">Renda Fixa Pós (CDI/Selic)</option>
+              <option value="Renda Fixa IPCA+ (Inflação)">Renda Fixa IPCA+ (Inflação)</option>
+              <option value="Fundos Imobiliários (FIIs)">Fundos Imobiliários (FIIs)</option>
+              <option value="Ações Brasil (B3)">Ações Brasil (B3)</option>
+              <option value="Exterior / Dólar">Exterior / Dólar</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Valor Aplicado (R$)</label>
+            <input type="number" step="0.01" id="inv-aplicado" required placeholder="0.00" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-neonPurple focus:outline-none" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Saldo Bruto Atual (R$)</label>
+            <input type="number" step="0.01" id="inv-atual" required placeholder="0.00" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-neonPurple focus:outline-none" />
+          </div>
+          <div class="flex items-end gap-2">
+            <div class="flex-1">
+              <label class="text-xs text-slate-400 block mb-1">Renda Passiva/Mês (R$)</label>
+              <input type="number" step="0.01" id="inv-renda" required placeholder="0.00" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-neonPurple focus:outline-none" />
+            </div>
+            <button type="submit" class="px-4 py-2 rounded-xl bg-neonPurple text-white font-bold text-xs hover:opacity-90 transition-all shrink-0">+ Ativo</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="glass-card rounded-2xl p-5 lg:col-span-2 neon-border-purple">
+          <div class="mb-4">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-neonPurple">💎 Carteira Consolidada de Ativos (Edição Direta)</h2>
+            <p class="text-xs text-slate-400">Altere qualquer campo diretamente na tabela para recalcular rentabilidade e alocação</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-800 text-xs font-mono uppercase text-neonPurple bg-slate-900/60">
+                  <th class="py-3 px-2">Ativo / Produto</th>
+                  <th class="py-3 px-2">Classe</th>
+                  <th class="py-3 px-2 text-right">Valor Aplicado</th>
+                  <th class="py-3 px-2 text-right">Saldo Atual</th>
+                  <th class="py-3 px-2 text-right">Rentab.</th>
+                  <th class="py-3 px-2 text-right">Renda/Mês</th>
+                  <th class="py-3 px-2 text-center">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-investimentos" class="divide-y divide-slate-800/60 text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 neon-border-cyan flex flex-col justify-between">
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-neonCyan">🥧 Alocação por Classe de Ativo</h2>
+            <p class="text-xs text-slate-400">Distribuição percentual do patrimônio atual</p>
+          </div>
+          <div class="relative h-64 w-full my-4">
+            <canvas id="chartInvestDonut"></canvas>
+          </div>
+          <div id="inv-summary-box" class="bg-obsidian/70 rounded-xl p-3 border border-slate-800 text-xs space-y-1"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 5: INTEGRAÇÃO COM BANCO DE DADOS POSTGRESQL & DEPLOY DOCKER      -->
+    <!-- ===================================================================== -->
+    <section id="view-database" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-card rounded-2xl p-6 neon-border-cyan space-y-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold uppercase tracking-wider text-neonCyan flex items-center gap-2">
+                🐘 Conexão com Banco de Dados PostgreSQL
+              </h2>
+              <p class="text-xs text-slate-400 mt-1">
+                Sincronize seus lançamentos, compras parceladas de cartão e investimentos com o PostgreSQL.
+              </p>
+            </div>
+            <span id="pg-badge-status" class="px-3 py-1 rounded-full text-xs font-mono bg-neonAmber/20 text-neonAmber border border-neonAmber/40">
+              Modo Híbrido
+            </span>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="text-xs font-semibold text-slate-300 block mb-1">URL do Endpoint da API PostgreSQL</label>
+              <input type="text" id="pg-api-url" value="/api" class="w-full bg-obsidian border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-neonCyan font-mono focus:border-neonCyan focus:outline-none" />
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-slate-300 block mb-1">Chave de Autenticação / Bearer Token (Opcional)</label>
+              <input type="password" id="pg-api-key" placeholder="Token opcional..." class="w-full bg-obsidian border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:border-neonCyan focus:outline-none" />
+            </div>
+
+            <div class="pt-2 border-t border-slate-800 space-y-2">
+              <label class="flex items-center gap-2.5 text-sm text-slate-200 cursor-pointer">
+                <input type="checkbox" id="pg-auto-sync" class="rounded bg-obsidian border-slate-700 text-neonCyan" />
+                Sincronizar automaticamente alterações com o PostgreSQL
+              </label>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+              <button onclick="salvarConfigPostgres()" class="px-4 py-2.5 rounded-xl bg-neonCyan text-obsidian font-bold text-xs sm:text-sm">💾 Salvar Endpoint</button>
+              <button onclick="testarConexaoPostgres()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-neonSky border border-neonSky/30 text-xs sm:text-sm font-semibold">🔌 Testar Conexão</button>
+              <button onclick="enviarTudoParaPostgres()" class="px-4 py-2.5 rounded-xl bg-neonPurple/20 hover:bg-neonPurple/30 text-neonPurple border border-neonPurple/40 text-xs sm:text-sm font-semibold">⬆️ Enviar p/ PostgreSQL</button>
+              <button onclick="puxarTudoDoPostgres()" class="px-4 py-2.5 rounded-xl bg-neonGreen/20 hover:bg-neonGreen/30 text-neonGreen border border-neonGreen/40 text-xs sm:text-sm font-semibold">⬇️ Carregar do PostgreSQL</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guia de Subida / Deploy Rápido -->
+        <div class="glass-card rounded-2xl p-6 neon-border-purple space-y-4 flex flex-col justify-between">
+          <div class="space-y-3">
+            <h2 class="text-base font-bold uppercase tracking-wider text-neonPurple">🚀 Como Subir a Aplicação (Cloud ou Local)</h2>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Esta aplicação já está rodando ao vivo aqui no painel! Para hospedar na nuvem gratuitamente ou rodar junto com seu container PostgreSQL:
+            </p>
+            <div class="space-y-2 text-xs text-slate-300">
+              <div class="p-3 rounded-xl bg-obsidian/80 border border-slate-800">
+                <strong class="text-neonCyan">1. Subir Front-end Grátis (Vercel / Netlify / GitHub Pages):</strong>
+                <p class="text-slate-400 mt-0.5">Basta arrastar a pasta com este arquivo <code class="text-white">index.html</code> para <span class="text-neonSky">app.netlify.com/drop</span> ou <span class="text-neonSky">vercel.com</span>. Fica online em 10 segundos com HTTPS.</p>
+              </div>
+              <div class="p-3 rounded-xl bg-obsidian/80 border border-slate-800">
+                <strong class="text-neonPurple">2. Subir PostgreSQL + API via Docker Compose:</strong>
+                <p class="text-slate-400 mt-0.5">Copie os arquivos <code class="text-white">docker-compose.yml</code> e <code class="text-white">schema.sql</code> abaixo e rode <code class="text-neonGreen">docker compose up -d</code>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCRIPTS COPIÁVEIS DE DEPLOY (DOCKER + SQL) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono font-bold text-neonCyan">📄 docker-compose.yml (PostgreSQL 16 + Adminer)</span>
+            <button onclick="copiarCodigo('code-docker')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-neonCyan">📋 Copiar</button>
+          </div>
+          <pre id="code-docker" class="bg-obsidian p-3.5 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-300 overflow-x-auto">version: '3.8'
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cyberfinance_pg
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: cyberpassword2026
+      POSTGRES_DB: cyberfinance
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+volumes:
+  pgdata:</pre>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono font-bold text-neonPurple">📄 schema.sql (DDL Completo PostgreSQL)</span>
+            <button onclick="copiarCodigo('code-sql')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-neonPurple">📋 Copiar</button>
+          </div>
+          <pre id="code-sql" class="bg-obsidian p-3.5 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-300 overflow-x-auto max-h-48">CREATE TABLE IF NOT EXISTS fin_lancamentos (
+  id BIGINT NOT NULL,
+  mes_ref VARCHAR(3) NOT NULL,
+  descricao VARCHAR(255) NOT NULL,
+  categoria VARCHAR(100) NOT NULL,
+  tipo VARCHAR(20) NOT NULL,
+  valor NUMERIC(14,2) NOT NULL DEFAULT 0,
+  data_vencimento DATE NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  cartao_unificado VARCHAR(100),
+  PRIMARY KEY (mes_ref, id)
+);
+
+CREATE TABLE IF NOT EXISTS fin_cartoes_compras (
+  id BIGINT NOT NULL,
+  mes_ref VARCHAR(3) NOT NULL,
+  cartao VARCHAR(100) NOT NULL,
+  item VARCHAR(255) NOT NULL,
+  categoria VARCHAR(100) NOT NULL,
+  valor_parcela NUMERIC(14,2) NOT NULL,
+  parcela_atual INT NOT NULL DEFAULT 1,
+  total_parcelas INT NOT NULL DEFAULT 1,
+  parcelas_faltantes INT GENERATED ALWAYS AS (GREATEST(0, total_parcelas - parcela_atual)) STORED,
+  saldo_futuro NUMERIC(14,2) GENERATED ALWAYS AS (GREATEST(0, total_parcelas - parcela_atual) * valor_parcela) STORED,
+  PRIMARY KEY (mes_ref, id)
+);</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 6: CONFIGURAÇÃO DE E-MAIL E BACKUP                               -->
+    <!-- ===================================================================== -->
+    <section id="view-config" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-card rounded-2xl p-6 neon-border-cyan space-y-5">
+          <div>
+            <h2 class="text-base font-bold uppercase tracking-wider text-neonCyan">✉️ Configuração de Alertas por E-mail</h2>
+            <p class="text-xs text-slate-400 mt-1">Defina para qual endereço os avisos de vencimento e confirmações serão enviados.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="text-xs font-semibold text-slate-300 block mb-1">Seu E-mail Destinatário</label>
+              <input type="email" id="cfg-email" value="jcnogueira.oliveira@gmail.com" class="w-full bg-obsidian border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-neonCyan font-mono focus:border-neonCyan focus:outline-none" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs font-semibold text-slate-300 block mb-1">Dias de Antecedência p/ Aviso Amarelo</label>
+                <input type="number" id="cfg-dias-alerta" value="3" min="1" max="30" class="w-full bg-obsidian border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-mono" />
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-300 block mb-1">Modo de Disparo Preferido</label>
+                <select id="cfg-modo-envio" class="w-full bg-obsidian border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white">
+                  <option value="gmail_web">Abrir Gmail Web Direto (Sem precisar de API)</option>
+                  <option value="mailto">App de E-mail Padrão (Outlook / Mail)</option>
+                  <option value="emailjs">API Automática Silenciosa (EmailJS)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="space-y-2 pt-2 border-t border-slate-800">
+              <label class="flex items-center gap-2.5 text-sm text-slate-200 cursor-pointer">
+                <input type="checkbox" id="cfg-auto-pago" checked class="rounded bg-obsidian border-slate-700 text-neonCyan" />
+                Enviar e-mail automaticamente quando eu marcar uma conta como <strong>Pago</strong>
+              </label>
+              <label class="flex items-center gap-2.5 text-sm text-slate-200 cursor-pointer">
+                <input type="checkbox" id="cfg-auto-vencimento" checked class="rounded bg-obsidian border-slate-700 text-neonCyan" />
+                Notificar contas <strong>Atrasadas / Vencendo</strong> ao abrir o painel
+              </label>
+            </div>
+
+            <div class="bg-obsidian/80 p-4 rounded-xl border border-slate-800 space-y-3">
+              <div class="text-xs font-semibold text-neonPurple uppercase tracking-wider">Opcional: Credenciais EmailJS</div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input type="text" id="cfg-ejs-pubkey" placeholder="Public Key" class="bg-panel border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono" />
+                <input type="text" id="cfg-ejs-service" placeholder="Service ID" class="bg-panel border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono" />
+                <input type="text" id="cfg-ejs-template" placeholder="Template ID" class="bg-panel border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono" />
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+              <button onclick="salvarConfigEmail()" class="px-5 py-2.5 rounded-xl bg-neonCyan text-obsidian font-bold text-sm">💾 Salvar Configurações</button>
+              <button onclick="testarEnvioEmail()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-neonCyan border border-neonCyan/30 text-sm font-semibold">🚀 Enviar E-mail de Teste</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 neon-border-purple flex flex-col justify-between space-y-4">
+          <div>
+            <h2 class="text-base font-bold uppercase tracking-wider text-neonPurple">📡 Console de Auditoria & Backup (Importar / Exportar)</h2>
+            <p class="text-xs text-slate-400 mt-1">Histórico em tempo real de ações executadas no sistema</p>
+            <div id="email-log-box" class="mt-4 bg-obsidian border border-slate-800 rounded-xl p-4 h-56 overflow-y-auto font-mono text-xs space-y-2 text-slate-300"></div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap gap-2">
+              <button onclick="exportarDadosJSON()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-neonCyan border border-slate-700 font-semibold">⬇️ Exportar JSON</button>
+              <label class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-neonPurple border border-slate-700 font-semibold cursor-pointer">
+                ⬆️ Importar JSON
+                <input type="file" accept=".json" onchange="importarDadosJSON(event)" class="hidden" />
+              </label>
+              <button onclick="resetarDadosPadrao()" class="px-3 py-1.5 rounded-lg bg-neonRose/10 hover:bg-neonRose/20 text-xs text-neonRose border border-neonRose/30">🔄 Restaurar Padrão</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CICLO FINANCEIRO E METAS POR CATEGORIA -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-card rounded-2xl p-6 neon-border-sky space-y-4">
+          <div>
+            <h2 class="text-base font-bold uppercase tracking-wider text-neonSky">🗓️ Ciclo Financeiro</h2>
+            <p class="text-xs text-slate-400 mt-1">O ciclo de um mês começa no dia de virada do mês anterior e termina na véspera do dia de virada do próprio mês.
+              Com virada no dia 15, o ciclo de <strong>Novembro</strong> vai de <strong>15/10 a 14/11</strong>.</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-slate-300 block mb-1">Dia de virada do ciclo</label>
+              <input type="number" id="cfg-ciclo-dia" value="15" min="1" max="28" class="w-full bg-obsidian border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-mono" />
+            </div>
+            <div class="flex items-end">
+              <label class="flex items-center gap-2.5 text-xs text-slate-200 cursor-pointer pb-2">
+                <input type="checkbox" id="cfg-ciclo-auto" checked class="rounded bg-obsidian border-slate-700 text-neonSky" />
+                Novo lançamento vai para o ciclo da data de vencimento
+              </label>
+            </div>
+          </div>
+          <div id="cfg-ciclo-preview" class="bg-obsidian/80 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 font-mono"></div>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="salvarConfigCiclo()" class="px-5 py-2.5 rounded-xl bg-neonSky text-obsidian font-bold text-sm">💾 Salvar Ciclo</button>
+            <button onclick="solicitarReorganizarPorCiclo()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-neonSky border border-neonSky/30 text-sm font-semibold">🔀 Reorganizar lançamentos pelo ciclo</button>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 neon-border-cyan space-y-3">
+          <div>
+            <h2 class="text-base font-bold uppercase tracking-wider text-neonCyan">🎯 Metas por Categoria (por ciclo)</h2>
+            <p class="text-xs text-slate-400 mt-1">Limite de gasto de cada categoria de despesa. Vale para todos os ciclos.</p>
+          </div>
+          <div id="cfg-metas" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto pr-1"></div>
+          <button onclick="salvarMetas()" class="px-5 py-2.5 rounded-xl bg-neonCyan text-obsidian font-bold text-sm">💾 Salvar Metas</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================= -->
+  <!-- APPLICATION JAVASCRIPT                                                  -->
+  <!-- ======================================================================= -->
+  <script>
+    const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    const MONTH_FULL = {
+      Jan: "Janeiro", Fev: "Fevereiro", Mar: "Março", Abr: "Abril",
+      Mai: "Maio", Jun: "Junho", Jul: "Julho", Ago: "Agosto",
+      Set: "Setembro", Out: "Outubro", Nov: "Novembro", Dez: "Dezembro"
+    };
+
+    // API na mesma origem do servidor (server.js serve esta página e /api)
+    const PG_API_PADRAO = "/api";
+
+    // =========================================================================
+    // CATEGORIAS: ícone (Lucide), emoji de reserva, cor e meta por ciclo
+    //   grupo "lanc"   = categorias dos lançamentos (meta só nas de despesa)
+    //   grupo "cartao" = categorias das compras no cartão; "real" diz em qual categoria de despesa a compra conta
+    // =========================================================================
+    const CATEGORIAS = [
+      { nome: "Moradia e Condomínio",             grupo: "lanc", tipo: "Despesa",      icone: "house",          emoji: "🏠", cor: "#38BDF8", meta: 2800 },
+      { nome: "Energia, Água, Gás e Internet",    grupo: "lanc", tipo: "Despesa",      icone: "zap",            emoji: "⚡", cor: "#FACC15", meta: 550 },
+      { nome: "Supermercado e Padaria",           grupo: "lanc", tipo: "Despesa",      icone: "shopping-cart",  emoji: "🛒", cor: "#34D399", meta: 1500 },
+      { nome: "Delivery e Restaurantes",          grupo: "lanc", tipo: "Despesa",      icone: "utensils",       emoji: "🍽️", cor: "#FB923C", meta: 750 },
+      { nome: "Transporte, Combustível e Uber",   grupo: "lanc", tipo: "Despesa",      icone: "car",            emoji: "🚗", cor: "#60A5FA", meta: 950 },
+      { nome: "Gastos com IT",                    grupo: "lanc", tipo: "Despesa",      icone: "cpu",            emoji: "💻", cor: "#22D3EE", meta: 800 },
+      { nome: "Cartão de Crédito / Assinaturas",  grupo: "lanc", tipo: "Despesa",      icone: "credit-card",    emoji: "💳", cor: "#F59E0B", meta: 1800 },
+      { nome: "Saúde e Farmácia",                 grupo: "lanc", tipo: "Despesa",      icone: "heart-pulse",    emoji: "🩺", cor: "#F43F5E", meta: 650 },
+      { nome: "Educação, Cursos e Certificações", grupo: "lanc", tipo: "Despesa",      icone: "graduation-cap", emoji: "🎓", cor: "#A78BFA", meta: 500 },
+      { nome: "Lazer, Viagens e Eventos",         grupo: "lanc", tipo: "Despesa",      icone: "plane",          emoji: "✈️", cor: "#E879F9", meta: 700 },
+      { nome: "Outras Despesas",                  grupo: "lanc", tipo: "Despesa",      icone: "package",        emoji: "📦", cor: "#94A3B8", meta: 400 },
+      { nome: "Aporte em Investimentos",          grupo: "lanc", tipo: "Investimento", icone: "trending-up",    emoji: "📈", cor: "#A855F7" },
+      { nome: "Salário e Pró-Labore",             grupo: "lanc", tipo: "Receita",      icone: "briefcase",      emoji: "💼", cor: "#10B981" },
+      { nome: "Consultoria, Aulas e Projetos",    grupo: "lanc", tipo: "Receita",      icone: "presentation",   emoji: "🧑‍🏫", cor: "#2DD4BF" },
+      { nome: "Rendimentos e Dividendos",         grupo: "lanc", tipo: "Receita",      icone: "coins",          emoji: "🪙", cor: "#84CC16" },
+      { nome: "Gastos com IT",                    grupo: "cartao", real: "Gastos com IT",                  icone: "cpu",             emoji: "💻", cor: "#22D3EE" },
+      { nome: "IA / Software & Cloud",            grupo: "cartao", real: "Gastos com IT",                  icone: "bot",             emoji: "🤖", cor: "#06B6D4" },
+      { nome: "Eletrônicos & Hardware",           grupo: "cartao", real: "Gastos com IT",                  icone: "monitor",         emoji: "🖥️", cor: "#0EA5E9" },
+      { nome: "Casa, Obras & Leroy",              grupo: "cartao", real: "Moradia e Condomínio",           icone: "hammer",          emoji: "🔨", cor: "#38BDF8" },
+      { nome: "Supermercado & Atacado",           grupo: "cartao", real: "Supermercado e Padaria",         icone: "shopping-basket", emoji: "🧺", cor: "#34D399" },
+      { nome: "Restaurantes & iFood",             grupo: "cartao", real: "Delivery e Restaurantes",        icone: "pizza",           emoji: "🍕", cor: "#FB923C" },
+      { nome: "Viagens & Passagens",              grupo: "cartao", real: "Lazer, Viagens e Eventos",       icone: "plane-takeoff",   emoji: "🛫", cor: "#E879F9" },
+      { nome: "Mobilidade & Uber",                grupo: "cartao", real: "Transporte, Combustível e Uber", icone: "car-taxi-front",  emoji: "🚕", cor: "#60A5FA" },
+      { nome: "Outros",                           grupo: "cartao", real: "Outras Despesas",                icone: "package",         emoji: "📦", cor: "#94A3B8" }
+    ];
+    const CAT_PADRAO = { icone: "tag", emoji: "🏷️", cor: "#94A3B8" };
+    const catInfo = (nome, grupo) => CATEGORIAS.find(c => c.nome === nome && (!grupo || c.grupo === grupo)) || CATEGORIAS.find(c => c.nome === nome) || { nome, ...CAT_PADRAO };
+    const CATEGORIA_IT = "Gastos com IT";
+
+    // metas: as do código, sobrescritas pelas salvas em config.metas (aba Configurar)
+    function metaDe(nome) {
+      const m = appData?.config?.metas?.[nome];
+      return m !== undefined ? Number(m) : (catInfo(nome, "lanc").meta || 0);
+    }
+    const categoriasDespesa = () => CATEGORIAS.filter(c => c.grupo === "lanc" && c.tipo === "Despesa").map(c => c.nome);
+
+    // ícone em quadrado colorido; o <i data-lucide> vira SVG em desenharIcones()
+    function catIcon(nome, grupo, grande = false) {
+      const c = catInfo(nome, grupo);
+      return `<span class="cat-ico${grande ? " lg" : ""}" style="--c:${c.cor}" title="${esc(nome)}"><i data-lucide="${c.icone}" data-emoji="${c.emoji}"></i></span>`;
+    }
+    const catChip = (nome, grupo) => `<span class="cat-chip">${catIcon(nome, grupo)}<span>${esc(nome)}</span></span>`;
+
+    function desenharIcones() {
+      if (window.lucide && lucide.createIcons) { try { lucide.createIcons(); } catch (e) { /* segue com emoji */ } }
+      // ícone que não existe na versão do Lucide (ou sem internet): emoji da categoria
+      document.querySelectorAll("i[data-lucide][data-emoji]").forEach(el => {
+        const s = document.createElement("span"); s.className = "emoji"; s.textContent = el.dataset.emoji; el.replaceWith(s);
+      });
+    }
+
+    // selects de categoria montados a partir do registro (emoji + nome; o <select> nativo não mostra SVG)
+    function preencherSelectsCategoria() {
+      const lanc = CATEGORIAS.filter(c => c.grupo === "lanc");
+      const grupos = [["Despesa", "Despesas"], ["Receita", "Receitas"], ["Investimento", "Investimentos"]];
+      const optsLanc = grupos.map(([t, rot]) => `<optgroup label="${rot}">` +
+        lanc.filter(c => c.tipo === t).map(c => `<option value="${esc(c.nome)}">${c.emoji}  ${esc(c.nome)}</option>`).join("") + `</optgroup>`).join("");
+      const optsCartao = CATEGORIAS.filter(c => c.grupo === "cartao").map(c => `<option value="${esc(c.nome)}">${c.emoji}  ${esc(c.nome)}</option>`).join("");
+      for (const id of ["inp-cat", "edit-cat"]) { const s = document.getElementById(id); if (s) { const v = s.value; s.innerHTML = optsLanc; if (v) s.value = v; } }
+      for (const id of ["cc-inp-cat", "edit-cc-cat"]) { const s = document.getElementById(id); if (s) { const v = s.value; s.innerHTML = optsCartao; if (v) s.value = v; } }
+    }
+    // categoria desconhecida (veio do banco/backup) ainda precisa aparecer no select de edição
+    function garantirOpcao(selId, valor) {
+      const s = document.getElementById(selId);
+      if (s && valor && ![...s.options].some(o => o.value === valor)) s.insertAdjacentHTML("beforeend", `<option value="${esc(valor)}">🏷️  ${esc(valor)}</option>`);
+    }
+    // tipo sugerido ao escolher a categoria
+    function sugerirTipo(selCat, selTipo) {
+      const c = catInfo(document.getElementById(selCat).value, "lanc");
+      if (c.tipo) document.getElementById(selTipo).value = c.tipo;
+    }
+
+    // =========================================================================
+    // CICLO FINANCEIRO: o ciclo "Nov" vai de <dia>/10 até a véspera de <dia>/11 (dia padrão 15)
+    // =========================================================================
+    const ANO = 2026;
+    const cicloDia = () => Math.min(28, Math.max(1, parseInt(appData?.config?.cicloDia) || 15));
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const iso = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    const dataLocal = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+
+    // período do ciclo m: [inicio, fim] (datas locais)
+    function periodoCiclo(m) {
+      const i = MONTHS.indexOf(m), dia = cicloDia();
+      const ini = new Date(ANO, i - 1, dia);           // mês anterior (jan -> dez do ano anterior)
+      const fim = new Date(ANO, i, dia - 1);           // véspera da virada no mês do ciclo
+      return { ini, fim };
+    }
+    // ciclo (Jan..Dez de 2026) em que cai a data 'AAAA-MM-DD'; null se fora de 2026
+    function cicloDaData(s) {
+      const d = dataLocal(s);
+      let ano = d.getFullYear(), mes = d.getMonth();
+      if (d.getDate() >= cicloDia()) { mes += 1; if (mes > 11) { mes = 0; ano += 1; } }
+      return ano === ANO ? MONTHS[mes] : null;
+    }
+    // data com o dia 'dia' dentro do ciclo m (ex.: vencimento de cartão)
+    function dataNoCiclo(m, dia) {
+      const i = MONTHS.indexOf(m);
+      const d = dia >= cicloDia() ? new Date(ANO, i - 1, dia) : new Date(ANO, i, dia);
+      return iso(d);
+    }
+    // soma n meses mantendo o dia (31/01 + 1 -> 28/02)
+    function somaMeses(s, n) {
+      const d = dataLocal(s), alvo = new Date(d.getFullYear(), d.getMonth() + n, 1);
+      const ult = new Date(alvo.getFullYear(), alvo.getMonth() + 1, 0).getDate();
+      return iso(new Date(alvo.getFullYear(), alvo.getMonth(), Math.min(d.getDate(), ult)));
+    }
+    const fmtCurto = (d) => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}`;
+    const cicloAtual = () => cicloDaData(iso(new Date())) || "Dez";
+
+    let activeMonth = "Out";
+    let selectedIds = new Set();
+
+    let chartAnualInstance = null;
+    let chartDonutInstance = null;
+    let chartCatInstance = null;
+    let chartInvInstance = null;
+    let chartCartoesBarInstance = null;
+    let chartCartoesCatInstance = null;
+
+    // id unico e crescente (Date.now() + aleatorio podia repetir dentro do mesmo milissegundo -> chave duplicada no banco)
+    let ultimoIdGerado = 0;
+    function novoId() {
+      ultimoIdGerado = Math.max(ultimoIdGerado + 1, Date.now() * 1000);
+      return ultimoIdGerado;
+    }
+
+    function offsetDateStr(daysOffset) {
+      const d = new Date();
+      d.setDate(d.getDate() + daysOffset);
+      return d.toISOString().split('T')[0];
+    }
+
+    function getInitialState() {
+      const db = {
+        config: {
+          email: "jcnogueira.oliveira@gmail.com",
+          diasAlerta: 3,
+          modoEnvio: "gmail_web",
+          autoPago: true,
+          autoVencimento: true,
+          ejsPubKey: "",
+          ejsService: "",
+          ejsTemplate: "",
+          pgApiUrl: PG_API_PADRAO,
+          pgApiKey: "",
+          pgAutoSync: false,
+          cicloDia: 15,
+          cicloAuto: true,
+          metas: {}
+        },
+        logs: [
+          `[${new Date().toLocaleTimeString()}] CyberFinance 2026 Enterprise inicializado com sucesso.`
+        ],
+        cartoesConfig: [
+          { nome: "Cartão Interempresas", diaVenc: 15, limite: 15000 },
+          { nome: "Nubank Ultravioleta", diaVenc: 10, limite: 20000 },
+          { nome: "Itaú Personalité Black", diaVenc: 20, limite: 25000 },
+          { nome: "XP Visa Infinite", diaVenc: 5, limite: 18000 }
+        ],
+        comprasCartaoPorMes: {},
+        investimentos: [
+          { ativo: "Tesouro Selic 2029", classe: "Renda Fixa Pós (CDI/Selic)", aplicado: 38000, atual: 42450, rendaMes: 395 },
+          { ativo: "CDB Liquidez Diária Itaú", classe: "Renda Fixa Pós (CDI/Selic)", aplicado: 22000, atual: 24310, rendaMes: 225 },
+          { ativo: "LCI Isenta 95% CDI", classe: "Renda Fixa Pós (CDI/Selic)", aplicado: 18500, atual: 20180, rendaMes: 185 },
+          { ativo: "Tesouro IPCA+ 2035", classe: "Renda Fixa IPCA+ (Inflação)", aplicado: 29000, atual: 33120, rendaMes: 260 },
+          { ativo: "Carteira FIIs (HGLG11, KNRI11, MXRF11)", classe: "Fundos Imobiliários (FIIs)", aplicado: 24000, atual: 26480, rendaMes: 245 },
+          { ativo: "Ações Dividendos (ITUB4, BBAS3, TAEE11)", classe: "Ações Brasil (B3)", aplicado: 15000, atual: 17350, rendaMes: 115 },
+          { ativo: "ETF IVVB11 / S&P 500", classe: "Exterior / Dólar", aplicado: 14500, atual: 17890, rendaMes: 45 }
+        ],
+        lancamentosPorMes: {}
+      };
+
+      MONTHS.forEach((m, idx) => {
+        const mNum = String(idx + 1).padStart(2, '0');
+        if (m === "Out") {
+          db.comprasCartaoPorMes[m] = [
+            { id: 5001, cartao: "Cartão Interempresas", item: "AI Gemini Advanced", cat: "IA / Software & Cloud", valorParcela: 100.00, parcAtual: 1, parcTotal: 1 },
+            { id: 5002, cartao: "Cartão Interempresas", item: "Compra Leroy Merlin (Materiais)", cat: "Casa, Obras & Leroy", valorParcela: 200.00, parcAtual: 2, parcTotal: 6 },
+            { id: 5003, cartao: "Cartão Interempresas", item: "Licença Cloud / Servidor Lab", cat: "IA / Software & Cloud", valorParcela: 150.00, parcAtual: 3, parcTotal: 12 },
+            { id: 5004, cartao: "Nubank Ultravioleta", item: "Notebook / Upgrade SSD NVMe", cat: "Eletrônicos & Hardware", valorParcela: 320.00, parcAtual: 4, parcTotal: 10 },
+            { id: 5005, cartao: "Nubank Ultravioleta", item: "Pedidos iFood & Restaurantes", cat: "Restaurantes & iFood", valorParcela: 280.00, parcAtual: 1, parcTotal: 1 },
+            { id: 5006, cartao: "Itaú Personalité Black", item: "Passagem Aérea (LATAM/GOL)", cat: "Viagens & Passagens", valorParcela: 410.00, parcAtual: 2, parcTotal: 4 },
+            { id: 5007, cartao: "XP Visa Infinite", item: "Compras Supermercado & Queijos", cat: "Supermercado & Atacado", valorParcela: 390.00, parcAtual: 1, parcTotal: 1 }
+          ];
+        } else {
+          db.comprasCartaoPorMes[m] = [
+            { id: idx * 1000 + 1, cartao: "Cartão Interempresas", item: "AI Gemini Advanced", cat: "IA / Software & Cloud", valorParcela: 100.00, parcAtual: 1, parcTotal: 1 },
+            { id: idx * 1000 + 2, cartao: "Cartão Interempresas", item: "Compra Leroy Merlin (Materiais)", cat: "Casa, Obras & Leroy", valorParcela: 200.00, parcAtual: Math.min(6, Math.max(1, idx - 7)), parcTotal: 6 },
+            { id: idx * 1000 + 3, cartao: "Nubank Ultravioleta", item: "Gastos Gerais & Assinaturas", cat: "Outros", valorParcela: 600.00, parcAtual: 1, parcTotal: 1 }
+          ];
+        }
+
+        if (m !== "Out") {
+          const isPaid = idx < 9 ? "Pago" : "Pendente";
+          db.lancamentosPorMes[m] = [
+            { id: idx * 100 + 1, desc: "Salário Mensal", cat: "Salário e Pró-Labore", tipo: "Receita", valor: 10500, venc: `2026-${mNum}-05`, status: isPaid },
+            { id: idx * 100 + 2, desc: "Consultoria / Treinamento Técnico", cat: "Consultoria, Aulas e Projetos", tipo: "Receita", valor: 3500 + (idx * 80), venc: `2026-${mNum}-15`, status: isPaid },
+            { id: idx * 100 + 3, desc: "Dividendos e Rendimentos", cat: "Rendimentos e Dividendos", tipo: "Receita", valor: 540, venc: `2026-${mNum}-20`, status: isPaid },
+            { id: idx * 100 + 4, desc: "Aporte Carteira de Investimentos", cat: "Aporte em Investimentos", tipo: "Investimento", valor: 2500, venc: `2026-${mNum}-08`, status: isPaid },
+            { id: idx * 100 + 5, desc: "Aluguel / Financiamento e Condomínio", cat: "Moradia e Condomínio", tipo: "Despesa", valor: 2800, venc: `2026-${mNum}-10`, status: isPaid },
+            { id: idx * 100 + 6, desc: "Energia, Água, Gás e Internet", cat: "Energia, Água, Gás e Internet", tipo: "Despesa", valor: 540, venc: `2026-${mNum}-12`, status: isPaid },
+            { id: idx * 100 + 7, desc: "Supermercado e Padaria", cat: "Supermercado e Padaria", tipo: "Despesa", valor: 1480, venc: `2026-${mNum}-15`, status: isPaid },
+            { id: idx * 100 + 8, desc: "💳 Fatura Unificada - Cartão Interempresas (AI Gemini, Compra Leroy...)", cat: "Cartão de Crédito / Assinaturas", tipo: "Despesa", valor: 300, venc: `2026-${mNum}-15`, status: isPaid, cartaoUnificado: "Cartão Interempresas" },
+            { id: idx * 100 + 9, desc: "💳 Fatura Unificada - Nubank Ultravioleta (1 item)", cat: "Cartão de Crédito / Assinaturas", tipo: "Despesa", valor: 600, venc: `2026-${mNum}-10`, status: isPaid, cartaoUnificado: "Nubank Ultravioleta" },
+            { id: idx * 100 + 10, desc: "Plano de Saúde e Farmácia", cat: "Saúde e Farmácia", tipo: "Despesa", valor: 640, venc: `2026-${mNum}-25`, status: isPaid }
+          ];
+        } else {
+          db.lancamentosPorMes["Out"] = [
+            { id: 901, desc: "Salário Mensal (Outubro)", cat: "Salário e Pró-Labore", tipo: "Receita", valor: 10500, venc: offsetDateStr(-10), status: "Pago" },
+            { id: 902, desc: "Consultoria / Treinamento Especializado", cat: "Consultoria, Aulas e Projetos", tipo: "Receita", valor: 3800, venc: offsetDateStr(-4), status: "Pago" },
+            { id: 903, desc: "Dividendos FIIs e Rendimentos CDI", cat: "Rendimentos e Dividendos", tipo: "Receita", valor: 610, venc: offsetDateStr(-2), status: "Pago" },
+            { id: 904, desc: "Aporte Tesouro Selic + FIIs", cat: "Aporte em Investimentos", tipo: "Investimento", valor: 2700, venc: offsetDateStr(-6), status: "Pago" },
+            { id: 905, desc: "Aluguel / Financiamento e Condomínio", cat: "Moradia e Condomínio", tipo: "Despesa", valor: 2800, venc: offsetDateStr(-7), status: "Pago" },
+            { id: 906, desc: "Conta de Energia Elétrica (Enel)", cat: "Energia, Água, Gás e Internet", tipo: "Despesa", valor: 265.40, venc: offsetDateStr(-3), status: "Pendente" },
+            { id: 907, desc: "Internet Fibra Óptica + Celular", cat: "Energia, Água, Gás e Internet", tipo: "Despesa", valor: 189.90, venc: offsetDateStr(-1), status: "Pendente" },
+            { id: 908, desc: "💳 Fatura Unificada - Cartão Interempresas (AI Gemini, Compra Leroy...)", cat: "Cartão de Crédito / Assinaturas", tipo: "Despesa", valor: 450.00, venc: offsetDateStr(0), status: "Pendente", cartaoUnificado: "Cartão Interempresas" },
+            { id: 909, desc: "💳 Fatura Unificada - Nubank Ultravioleta (Notebook, iFood...)", cat: "Cartão de Crédito / Assinaturas", tipo: "Despesa", valor: 600.00, venc: offsetDateStr(1), status: "Pendente", cartaoUnificado: "Nubank Ultravioleta" },
+            { id: 910, desc: "Seguro Automotivo (Parcela Mensal)", cat: "Transporte, Combustível e Uber", tipo: "Despesa", valor: 340.00, venc: offsetDateStr(2), status: "Pendente" },
+            { id: 911, desc: "Supermercado e Padaria Especial", cat: "Supermercado e Padaria", tipo: "Despesa", valor: 1420.00, venc: offsetDateStr(3), status: "Pendente" }
+          ];
+        }
+      });
+      return db;
+    }
+
+    let appData = JSON.parse(localStorage.getItem("cyberfinance_2026_v5")) || getInitialState();
+    // URL antiga (http://localhost:3000/api) salva no navegador -> API desta origem
+    if (!appData.config.pgApiUrl || /^https?:\/\/localhost:3000\b/.test(appData.config.pgApiUrl)) appData.config.pgApiUrl = PG_API_PADRAO;
+
+    function saveState() {
+      localStorage.setItem("cyberfinance_2026_v5", JSON.stringify(appData));
+      if (appData.config.pgAutoSync) {
+        sincronizarSilenciosoPostgres();
+      }
+    }
+
+    // texto digitado pelo usuario vai para innerHTML: escapar (evita quebrar a tela ou injetar HTML/JS)
+    function esc(v) {
+      return String(v ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+
+    function formatBRL(val) {
+      return Number(val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function formatDateBR(yyyy_mm_dd) {
+      if (!yyyy_mm_dd) return "-";
+      const parts = yyyy_mm_dd.split("-");
+      if (parts.length !== 3) return yyyy_mm_dd;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function getAlertInfo(item) {
+      if (item.tipo === "Receita") {
+        return item.status === "Pago"
+          ? { code: "RECEBIDO", label: "✅ RECEBIDO", badgeClass: "bg-neonGreen/20 text-neonGreen border-neonGreen/40", days: null }
+          : { code: "A RECEBER", label: "⏳ A RECEBER", badgeClass: "bg-neonSky/20 text-neonSky border-neonSky/40", days: null };
+      }
+      if (item.status === "Pago") {
+        return { code: "PAGO", label: "✅ PAGO", badgeClass: "bg-neonGreen/20 text-neonGreen border-neonGreen/40", days: null };
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const due = new Date(item.venc + "T00:00:00");
+      const diffDays = Math.round((due - today) / (1000 * 60 * 60 * 24));
+      const limitDays = Number(appData.config.diasAlerta || 3);
+
+      if (diffDays < 0) {
+        return { code: "ATRASADO", label: `🚨 ATRASADO (${Math.abs(diffDays)}d)`, badgeClass: "bg-neonRose/20 text-neonRose border-neonRose/50", days: diffDays };
+      } else if (diffDays === 0) {
+        return { code: "VENCE HOJE", label: "⚠️ VENCE HOJE!", badgeClass: "bg-neonRose/20 text-neonRose border-neonRose/50", days: 0 };
+      } else if (diffDays <= limitDays) {
+        return { code: "VENCE EM BREVE", label: `⏰ VENCE EM ${diffDays}D`, badgeClass: "bg-neonAmber/20 text-neonAmber border-neonAmber/50", days: diffDays };
+      } else {
+        return { code: "NO PRAZO", label: `📅 NO PRAZO (${diffDays}d)`, badgeClass: "bg-neonSky/15 text-neonSky border-neonSky/30", days: diffDays };
+      }
+    }
+
+    function showToast(msg, type = "cyan") {
+      const container = document.getElementById("toast-container");
+      const el = document.createElement("div");
+      const borderCol = type === "rose" ? "border-neonRose" : type === "green" ? "border-neonGreen" : type === "amber" ? "border-neonAmber" : "border-neonCyan";
+      el.className = `glass-card px-4 py-3 rounded-xl border-l-4 ${borderCol} text-xs text-white shadow-xl transition-all duration-300`;
+      el.innerHTML = msg;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 4500);
+    }
+
+    function addLog(text) {
+      const ts = new Date().toLocaleTimeString();
+      appData.logs.unshift(`[${ts}] ${text}`);
+      localStorage.setItem("cyberfinance_2026_v5", JSON.stringify(appData));
+      renderLogs();
+    }
+
+    // =========================================================================
+    // MÓDULO DE CARTÕES DE CRÉDITO, PARCELAS & PROPAGAÇÃO AUTOMÁTICA
+    // =========================================================================
+    function calcularParcelasInfo(compra) {
+      const atual = Math.max(1, parseInt(compra.parcAtual) || 1);
+      const total = Math.max(atual, parseInt(compra.parcTotal) || 1);
+      const faltam = Math.max(0, total - atual);
+      const valParcela = Number(compra.valorParcela || 0);
+      const saldoFuturoRestante = faltam * valParcela;
+      const pctConcluido = Math.round((atual / total) * 100);
+
+      let textoFaltam = "";
+      let badgeCor = "";
+      if (total === 1) {
+        textoFaltam = "À vista (Quitado no mês)";
+        badgeCor = "bg-neonGreen/15 text-neonGreen border-neonGreen/30";
+      } else if (faltam === 0) {
+        textoFaltam = "🎉 Última parcela!";
+        badgeCor = "bg-neonGreen/20 text-neonGreen border-neonGreen/40";
+      } else if (faltam === 1) {
+        textoFaltam = "Falta 1 parcela";
+        badgeCor = "bg-neonAmber/20 text-neonAmber border-neonAmber/40";
+      } else {
+        textoFaltam = `Faltam ${faltam} parcelas`;
+        badgeCor = "bg-neonPurple/20 text-neonPurple border-neonPurple/40";
+      }
+
+      return { atual, total, faltam, valParcela, saldoFuturoRestante, pctConcluido, textoFaltam, badgeCor };
+    }
+
+    function adicionarNovoCartao(e) {
+      e.preventDefault();
+      const nome = document.getElementById("novo-cartao-nome").value.trim();
+      const diaVenc = parseInt(document.getElementById("novo-cartao-venc").value) || 10;
+      if (!nome) return;
+
+      const jaExiste = appData.cartoesConfig.some(c => c.nome.toLowerCase() === nome.toLowerCase());
+      if (jaExiste) {
+        showToast("⚠️ Este cartão já está cadastrado!", "amber");
+        return;
+      }
+
+      appData.cartoesConfig.push({ nome, diaVenc, limite: 15000 });
+      document.getElementById("novo-cartao-nome").value = "";
+      document.getElementById("novo-cartao-venc").value = "";
+      saveState();
+      renderAll();
+      showToast(`💳 Cartão <b>${esc(nome)}</b> cadastrado com sucesso!`, "green");
+    }
+
+    function adicionarCompraCartao(e) {
+      e.preventDefault();
+      const cartao = document.getElementById("cc-inp-cartao").value;
+      const item = document.getElementById("cc-inp-item").value.trim();
+      const cat = document.getElementById("cc-inp-cat").value;
+      const valorParcela = parseFloat(document.getElementById("cc-inp-valor").value) || 0;
+      const parcAtual = parseInt(document.getElementById("cc-inp-parc-atual").value) || 1;
+      const parcTotal = Math.max(parcAtual, parseInt(document.getElementById("cc-inp-parc-total").value) || 1);
+      const autoUnificar = document.getElementById("cc-inp-auto-unificar").checked;
+      const propagarFuturo = document.getElementById("cc-inp-propagar-parcelas").checked;
+
+      const startIdx = MONTHS.indexOf(activeMonth);
+      const faltam = parcTotal - parcAtual;
+      const maxSteps = propagarFuturo ? Math.min(faltam, 11 - startIdx) : 0;
+
+      for (let step = 0; step <= maxSteps; step++) {
+        const mAlvo = MONTHS[startIdx + step];
+        if (!appData.comprasCartaoPorMes[mAlvo]) appData.comprasCartaoPorMes[mAlvo] = [];
+        appData.comprasCartaoPorMes[mAlvo].unshift({
+          id: novoId(),
+          cartao,
+          item,
+          cat,
+          valorParcela,
+          parcAtual: parcAtual + step,
+          parcTotal
+        });
+        if (autoUnificar) {
+          unificarFaturaPorCartaoMesEspecifico(cartao, mAlvo, true);
+        }
+      }
+
+      document.getElementById("form-nova-compra-cartao").reset();
+      document.getElementById("cc-inp-parc-atual").value = 1;
+      document.getElementById("cc-inp-parc-total").value = 1;
+      document.getElementById("cc-inp-auto-unificar").checked = autoUnificar;
+      document.getElementById("cc-inp-propagar-parcelas").checked = propagarFuturo;
+
+      saveState();
+      renderAll();
+      showToast(`💳 Compra <b>${esc(item)}</b> lançada no <b>${esc(cartao)}</b> (${maxSteps > 0 ? `propagada por +${maxSteps} mês(es)` : 'no mês atual'})!`, "green");
+    }
+
+    function unificarFaturaPorCartao(nomeCartao, silencioso = false) {
+      unificarFaturaPorCartaoMesEspecifico(nomeCartao, activeMonth, silencioso);
+    }
+
+    function unificarFaturaPorCartaoMesEspecifico(nomeCartao, mesAlvo, silencioso = false) {
+      const comprasMes = (appData.comprasCartaoPorMes[mesAlvo] || []).filter(c => c.cartao === nomeCartao);
+      const listaLanc = appData.lancamentosPorMes[mesAlvo] || [];
+
+      if (comprasMes.length === 0) {
+        appData.lancamentosPorMes[mesAlvo] = listaLanc.filter(x => x.cartaoUnificado !== nomeCartao);
+        if (!silencioso) showToast(`ℹ️ Nenhuma compra encontrada para <b>${esc(nomeCartao)}</b> em ${MONTH_FULL[mesAlvo]}.`, "amber");
+        saveState();
+        renderAll();
+        return;
+      }
+
+      const somaFatura = comprasMes.reduce((acc, c) => acc + Number(c.valorParcela || 0), 0);
+      const nomesResumo = comprasMes.slice(0, 3).map(c => c.item).join(", ") + (comprasMes.length > 3 ? "..." : "");
+      const descUnificada = `💳 Fatura Unificada - ${nomeCartao} (${nomesResumo})`;
+
+      const cfgCartao = appData.cartoesConfig.find(c => c.nome === nomeCartao);
+      // vencimento da fatura dentro do ciclo (ex.: ciclo Nov 15/10-14/11, cartão dia 20 -> 20/10; dia 10 -> 10/11)
+      const dataVencStr = dataNoCiclo(mesAlvo, parseInt(cfgCartao ? cfgCartao.diaVenc : 15) || 15);
+
+      const idxExistente = listaLanc.findIndex(x => x.cartaoUnificado === nomeCartao);
+      if (idxExistente >= 0) {
+        listaLanc[idxExistente].desc = descUnificada;
+        listaLanc[idxExistente].valor = somaFatura;
+      } else {
+        listaLanc.unshift({
+          id: novoId(),
+          desc: descUnificada,
+          cat: "Cartão de Crédito / Assinaturas",
+          tipo: "Despesa",
+          valor: somaFatura,
+          venc: dataVencStr,
+          status: "Pendente",
+          cartaoUnificado: nomeCartao
+        });
+      }
+
+      appData.lancamentosPorMes[mesAlvo] = listaLanc;
+      saveState();
+      renderAll();
+
+      if (!silencioso) {
+        addLog(`Fatura unificada gerada para ${nomeCartao} em ${mesAlvo}/2026: ${formatBRL(somaFatura)} (${comprasMes.length} itens).`);
+        showToast(`🔗 Fatura de <b>${esc(nomeCartao)}</b> unificada em Lançamentos: <b>${formatBRL(somaFatura)}</b>!`, "cyan");
+      }
+    }
+
+    function unificarTodosCartoesMes() {
+      const comprasMes = appData.comprasCartaoPorMes[activeMonth] || [];
+      const cartoesComCompra = [...new Set(comprasMes.map(c => c.cartao))];
+      if (cartoesComCompra.length === 0) {
+        showToast(`ℹ️ Não há compras de cartão em ${MONTH_FULL[activeMonth]} para unificar.`, "amber");
+        return;
+      }
+      cartoesComCompra.forEach(nomeCartao => unificarFaturaPorCartaoMesEspecifico(nomeCartao, activeMonth, true));
+      addLog(`Unificação geral: ${cartoesComCompra.length} cartão(ões) consolidados na aba de Lançamentos (${activeMonth}/2026).`);
+      showToast(`🔗 Todos os ${cartoesComCompra.length} cartões foram unificados nos Lançamentos de ${MONTH_FULL[activeMonth]}!`, "green");
+    }
+
+    function excluirCompraCartao(id) {
+      const lista = appData.comprasCartaoPorMes[activeMonth] || [];
+      const alvo = lista.find(x => x.id === id);
+      appData.comprasCartaoPorMes[activeMonth] = lista.filter(x => x.id !== id);
+      if (alvo) unificarFaturaPorCartao(alvo.cartao, true);
+      saveState();
+      renderAll();
+      showToast("🗑️ Item removido do cartão e fatura recalculada.", "rose");
+    }
+
+    function abrirModalCompraCartao(id) {
+      const lista = appData.comprasCartaoPorMes[activeMonth] || [];
+      const compra = lista.find(x => x.id === id);
+      if (!compra) return;
+
+      const selCartao = document.getElementById("edit-cc-cartao");
+      selCartao.innerHTML = appData.cartoesConfig.map(c => `<option value="${esc(c.nome)}" ${c.nome === compra.cartao ? 'selected' : ''}>${esc(c.nome)}</option>`).join("");
+
+      document.getElementById("edit-cc-id").value = compra.id;
+      document.getElementById("edit-cc-item").value = compra.item;
+      garantirOpcao("edit-cc-cat", compra.cat);
+      document.getElementById("edit-cc-cat").value = compra.cat;
+      document.getElementById("edit-cc-valor").value = compra.valorParcela;
+      document.getElementById("edit-cc-parc-atual").value = compra.parcAtual;
+      document.getElementById("edit-cc-parc-total").value = compra.parcTotal;
+
+      document.getElementById("modal-editar-compra-cartao").classList.remove("hidden");
+    }
+
+    function fecharModalCompraCartao() {
+      document.getElementById("modal-editar-compra-cartao").classList.add("hidden");
+    }
+
+    function salvarEdicaoCompraCartao(e) {
+      e.preventDefault();
+      const id = Number(document.getElementById("edit-cc-id").value);
+      const lista = appData.comprasCartaoPorMes[activeMonth] || [];
+      const idx = lista.findIndex(x => x.id === id);
+      if (idx === -1) return;
+
+      const cartaoAntigo = lista[idx].cartao;
+      const novoCartao = document.getElementById("edit-cc-cartao").value;
+      const novoItem = document.getElementById("edit-cc-item").value.trim();
+      const novaCat = document.getElementById("edit-cc-cat").value;
+      const novoVal = parseFloat(document.getElementById("edit-cc-valor").value) || 0;
+      const parcAtual = parseInt(document.getElementById("edit-cc-parc-atual").value) || 1;
+      const parcTotal = Math.max(parcAtual, parseInt(document.getElementById("edit-cc-parc-total").value) || 1);
+
+      lista[idx] = { id, cartao: novoCartao, item: novoItem, cat: novaCat, valorParcela: novoVal, parcAtual, parcTotal };
+
+      unificarFaturaPorCartao(novoCartao, true);
+      if (cartaoAntigo !== novoCartao) unificarFaturaPorCartao(cartaoAntigo, true);
+
+      saveState();
+      fecharModalCompraCartao();
+      renderAll();
+      showToast(`✏️ Compra <b>${esc(novoItem)}</b> atualizada e fatura recalculada!`, "amber");
+    }
+
+    // =========================================================================
+    // RENDERIZAÇÃO DO DASHBOARD DE CARTÕES E PARCELAS
+    // =========================================================================
+    function renderCartoesDashboard() {
+      const selFormCartao = document.getElementById("cc-inp-cartao");
+      const selFiltroCartao = document.getElementById("filtro-cartao-tabela");
+      const filtroAtual = selFiltroCartao ? selFiltroCartao.value : "TODOS";
+
+      if (selFormCartao) {
+        selFormCartao.innerHTML = appData.cartoesConfig.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)} (Venc. dia ${c.diaVenc})</option>`).join("");
+      }
+      if (selFiltroCartao) {
+        selFiltroCartao.innerHTML = `<option value="TODOS">Todos os Cartões</option>` +
+          appData.cartoesConfig.map(c => `<option value="${esc(c.nome)}" ${c.nome === filtroAtual ? 'selected' : ''}>${esc(c.nome)}</option>`).join("");
+      }
+
+      const comprasMes = appData.comprasCartaoPorMes[activeMonth] || [];
+      let totalFaturasMes = 0;
+      let totalSaldoFuturo = 0;
+      let qtdParceladas = 0;
+
+      const somaPorCartao = {};
+      const futuroPorCartao = {};
+      const qtdPorCartao = {};
+      appData.cartoesConfig.forEach(c => {
+        somaPorCartao[c.nome] = 0;
+        futuroPorCartao[c.nome] = 0;
+        qtdPorCartao[c.nome] = 0;
+      });
+
+      comprasMes.forEach(c => {
+        const pInfo = calcularParcelasInfo(c);
+        totalFaturasMes += pInfo.valParcela;
+        totalSaldoFuturo += pInfo.saldoFuturoRestante;
+        if (pInfo.total > 1) qtdParceladas++;
+
+        somaPorCartao[c.cartao] = (somaPorCartao[c.cartao] || 0) + pInfo.valParcela;
+        futuroPorCartao[c.cartao] = (futuroPorCartao[c.cartao] || 0) + pInfo.saldoFuturoRestante;
+        qtdPorCartao[c.cartao] = (qtdPorCartao[c.cartao] || 0) + 1;
+      });
+
+      let maiorCartao = "-";
+      let maiorValor = 0;
+      Object.entries(somaPorCartao).forEach(([nome, val]) => {
+        if (val > maiorValor) {
+          maiorValor = val;
+          maiorCartao = nome;
+        }
+      });
+
+      document.getElementById("cc-kpi-total-mes").textContent = formatBRL(totalFaturasMes);
+      document.getElementById("cc-kpi-qtd-itens").textContent = `${comprasMes.length} item(ns) lançados em ${MONTH_FULL[activeMonth]}`;
+      document.getElementById("cc-kpi-saldo-futuro").textContent = formatBRL(totalSaldoFuturo);
+      document.getElementById("cc-kpi-parcelas-ativas").textContent = `${qtdParceladas} compra(s) parcelada(s) em andamento`;
+      document.getElementById("cc-kpi-maior-cartao").textContent = maiorCartao;
+      document.getElementById("cc-kpi-maior-valor").textContent = `${formatBRL(maiorValor)} na fatura atual`;
+
+      const badgeCount = document.getElementById("badge-cards-count");
+      if (badgeCount) badgeCount.textContent = comprasMes.length;
+
+      const gridCartoes = document.getElementById("grid-resumo-cartoes");
+      const lancMes = appData.lancamentosPorMes[activeMonth] || [];
+
+      gridCartoes.innerHTML = appData.cartoesConfig.map((c, ci) => {
+        const soma = somaPorCartao[c.nome] || 0;
+        const futuro = futuroPorCartao[c.nome] || 0;
+        const qtd = qtdPorCartao[c.nome] || 0;
+        const limite = Number(c.limite || 15000);
+        const pctLimite = Math.min(100, Math.round(((soma + futuro) / limite) * 100));
+        const jaUnificado = lancMes.some(x => x.cartaoUnificado === c.nome && Number(x.valor) === soma && soma > 0);
+
+        return `
+          <div class="bg-obsidian/80 border ${soma > 0 ? 'border-neonCyan/40' : 'border-slate-800'} rounded-2xl p-4 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-white truncate">${esc(c.nome)}</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Venc. dia ${c.diaVenc}</span>
+              </div>
+              <div class="text-xl font-bold font-mono text-neonCyan mt-2">${formatBRL(soma)}</div>
+              <div class="text-[11px] text-slate-400 mt-0.5 flex justify-between">
+                <span>${qtd} compra(s) no mês</span>
+                <span class="text-neonPurple">Futuro: ${formatBRL(futuro)}</span>
+              </div>
+              <div class="mt-2">
+                <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
+                  <span>Uso do Limite (${ pctLimite }%)</span>
+                  <span>Lim: ${formatBRL(limite)}</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-neonCyan to-neonPurple" style="width: ${pctLimite}%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+              <button onclick="unificarFaturaPorCartao(appData.cartoesConfig[${ci}].nome)" class="w-full py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                jaUnificado
+                  ? 'bg-neonGreen/20 text-neonGreen border border-neonGreen/40'
+                  : 'bg-neonCyan/20 hover:bg-neonCyan text-neonCyan hover:text-obsidian border border-neonCyan/40'
+              }">
+                ${jaUnificado ? '✓ Fatura Unificada no Mês' : '🔗 Unificar Fatura no Mês'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const comprasFiltradas = filtroAtual === "TODOS"
+        ? comprasMes
+        : comprasMes.filter(c => c.cartao === filtroAtual);
+
+      const tbodyCC = document.getElementById("tbody-compras-cartao");
+      if (comprasFiltradas.length === 0) {
+        tbodyCC.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-xs text-slate-400">Nenhuma compra registrada para este filtro em ${MONTH_FULL[activeMonth]}/2026.</td></tr>`;
+      } else {
+        tbodyCC.innerHTML = comprasFiltradas.map(c => {
+          const p = calcularParcelasInfo(c);
+          return `
+            <tr class="hover:bg-slate-800/40 transition-colors">
+              <td class="py-3 px-3 font-semibold text-neonCyan text-xs">${esc(c.cartao)}</td>
+              <td class="py-3 px-3 font-medium text-white">${esc(c.item)}</td>
+              <td class="py-3 px-3 text-xs text-slate-300">${catChip(c.cat, "cartao")}</td>
+              <td class="py-3 px-3 text-right font-mono font-bold text-white">${formatBRL(p.valParcela)}</td>
+              <td class="py-3 px-3 text-center">
+                <div class="flex flex-col items-center gap-1">
+                  <span class="font-mono text-xs text-slate-200 font-semibold">${p.atual}/${p.total} (${p.pctConcluido}%)</span>
+                  <div class="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-neonCyan to-neonPurple" style="width: ${p.pctConcluido}%"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3 px-3 text-center">
+                <span class="px-2.5 py-1 rounded-full text-xs font-mono border ${p.badgeCor}">
+                  ${p.textoFaltam}
+                </span>
+              </td>
+              <td class="py-3 px-3 text-right font-mono text-xs ${p.saldoFuturoRestante > 0 ? 'text-neonPurple font-semibold' : 'text-slate-500'}">
+                ${formatBRL(p.saldoFuturoRestante)}
+              </td>
+              <td class="py-3 px-3 text-center">
+                <div class="flex items-center justify-center gap-1.5">
+                  <button onclick="abrirModalCompraCartao(${c.id})" class="px-2.5 py-1 rounded-lg bg-neonAmber/20 hover:bg-neonAmber/35 text-neonAmber border border-neonAmber/40 text-xs font-semibold">
+                    ✏️ Editar
+                  </button>
+                  <button onclick="excluirCompraCartao(${c.id})" class="px-2 py-1 rounded-lg bg-neonRose/15 hover:bg-neonRose/30 text-neonRose text-xs">
+                    🗑️
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      const ctxCCBar = document.getElementById("chartCartoesBar")?.getContext("2d");
+      if (ctxCCBar) {
+        if (chartCartoesBarInstance) chartCartoesBarInstance.destroy();
+        const nomesCartoes = appData.cartoesConfig.map(c => c.nome);
+        chartCartoesBarInstance = new Chart(ctxCCBar, {
+          type: 'bar',
+          data: {
+            labels: nomesCartoes,
+            datasets: [
+              {
+                label: `Fatura do Mês (${activeMonth})`,
+                data: nomesCartoes.map(n => somaPorCartao[n] || 0),
+                backgroundColor: '#00F5D4',
+                borderRadius: 5
+              },
+              {
+                label: 'Saldo Futuro Restante (Próximas Parcelas)',
+                data: nomesCartoes.map(n => futuroPorCartao[n] || 0),
+                backgroundColor: '#A855F7',
+                borderRadius: 5
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${formatBRL(ctx.raw)}` } }
+            },
+            scales: {
+              x: { grid: { color: 'rgba(148, 163, 184, 0.08)' } },
+              y: { grid: { color: 'rgba(148, 163, 184, 0.08)' } }
+            }
+          }
+        });
+      }
+
+      const ctxCCDonut = document.getElementById("chartCartoesCategoriasDonut")?.getContext("2d");
+      if (ctxCCDonut) {
+        if (chartCartoesCatInstance) chartCartoesCatInstance.destroy();
+        const catMap = {};
+        comprasMes.forEach(c => {
+          catMap[c.cat] = (catMap[c.cat] || 0) + Number(c.valorParcela || 0);
+        });
+        const cLabels = Object.keys(catMap);
+        const cVals = cLabels.map(k => catMap[k]);
+        chartCartoesCatInstance = new Chart(ctxCCDonut, {
+          type: 'doughnut',
+          data: {
+            labels: cLabels,
+            datasets: [{
+              data: cVals,
+              backgroundColor: cLabels.map(k => catInfo(k, "cartao").cor),
+              borderColor: '#0B0F19',
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '62%',
+            plugins: {
+              legend: { position: 'right' },
+              tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${formatBRL(ctx.raw)}` } }
+            }
+          }
+        });
+      }
+    }
+
+    // =========================================================================
+    // SELEÇÃO EM LOTE & EXCLUSÃO POR MÊS
+    // =========================================================================
+    function toggleSelecaoItem(id, checked) {
+      if (checked) selectedIds.add(id);
+      else selectedIds.delete(id);
+      atualizarBarraSelecao();
+    }
+
+    function selecionarTodosVisiveis(marcar) {
+      const lista = getLancamentosFiltradosMesAtual();
+      if (marcar) lista.forEach(item => selectedIds.add(item.id));
+      else selectedIds.clear();
+      renderAll();
+    }
+
+    function selecionarPorCritero(statusCrit) {
+      selectedIds.clear();
+      const lista = appData.lancamentosPorMes[activeMonth] || [];
+      lista.forEach(item => {
+        if (item.status === statusCrit) selectedIds.add(item.id);
+      });
+      renderAll();
+      showToast(`☑️ ${selectedIds.size} lançamento(s) "${statusCrit}" marcados.`, "cyan");
+    }
+
+    function atualizarBarraSelecao() {
+      const qtd = selectedIds.size;
+      const lbl = document.getElementById("contador-selecionados");
+      const badge = document.getElementById("badge-qtd-del");
+      const btnDel = document.getElementById("btn-apagar-selecionados");
+      const btnPay = document.getElementById("btn-quitar-selecionados");
+      const chkHeader = document.getElementById("chk-select-all-header");
+
+      if (lbl) lbl.textContent = `${qtd} selecionado(s) em ${activeMonth}`;
+      if (badge) badge.textContent = qtd;
+      if (btnDel) btnDel.disabled = qtd === 0;
+      if (btnPay) btnPay.disabled = qtd === 0;
+
+      const visiveis = getLancamentosFiltradosMesAtual();
+      if (chkHeader) {
+        chkHeader.checked = visiveis.length > 0 && visiveis.every(x => selectedIds.has(x.id));
+      }
+    }
+
+    function quitarSelecionadosEmLote() {
+      if (selectedIds.size === 0) return;
+      const lista = appData.lancamentosPorMes[activeMonth] || [];
+      let count = 0;
+      lista.forEach(item => {
+        if (selectedIds.has(item.id) && item.status !== "Pago") {
+          item.status = "Pago";
+          count++;
+        }
+      });
+      selectedIds.clear();
+      saveState();
+      renderAll();
+      showToast(`✅ ${count} lançamento(s) marcados como PAGO!`, "green");
+    }
+
+    function solicitarExclusaoSelecionados() {
+      if (selectedIds.size === 0) return;
+      const lista = appData.lancamentosPorMes[activeMonth] || [];
+      const itens = lista.filter(x => selectedIds.has(x.id));
+      const totalVal = itens.reduce((a, b) => a + Number(b.valor), 0);
+
+      document.getElementById("confirm-modal-title").textContent = `Apagar ${itens.length} Lançamento(s) Selecionado(s)?`;
+      document.getElementById("confirm-modal-subtitle").textContent = `Mês: ${MONTH_FULL[activeMonth]}/2026 • Soma: ${formatBRL(totalVal)}`;
+      document.getElementById("confirm-modal-body").innerHTML = itens.map(x => `• ${esc(x.desc)} (${formatBRL(x.valor)})`).join("<br>");
+
+      document.getElementById("btn-confirm-execute").onclick = () => {
+        appData.lancamentosPorMes[activeMonth] = lista.filter(x => !selectedIds.has(x.id));
+        selectedIds.clear();
+        saveState();
+        fecharModalConfirmacao();
+        renderAll();
+        showToast(`🗑️ ${itens.length} lançamento(s) apagados!`, "rose");
+      };
+
+      document.getElementById("modal-confirmar-exclusao").classList.remove("hidden");
+    }
+
+    function solicitarLimpezaMesInteiro() {
+      const mesAlvo = document.getElementById("select-mes-limpeza")?.value || activeMonth;
+      const lista = appData.lancamentosPorMes[mesAlvo] || [];
+      if (lista.length === 0) {
+        showToast(`ℹ️ O mês de ${MONTH_FULL[mesAlvo]} já está vazio!`, "amber");
+        return;
+      }
+
+      const totalVal = lista.reduce((a, b) => a + Number(b.valor), 0);
+      document.getElementById("confirm-modal-title").textContent = `🔥 Apagar TODOS os lançamentos de ${MONTH_FULL[mesAlvo]}?`;
+      document.getElementById("confirm-modal-subtitle").textContent = `Serão removidos todos os ${lista.length} registros (${formatBRL(totalVal)}).`;
+      document.getElementById("confirm-modal-body").innerHTML = lista.map(x => `• [${x.tipo}] ${esc(x.desc)} — ${formatBRL(x.valor)}`).join("<br>");
+
+      document.getElementById("btn-confirm-execute").onclick = () => {
+        appData.lancamentosPorMes[mesAlvo] = [];
+        selectedIds.clear();
+        activeMonth = mesAlvo;
+        saveState();
+        fecharModalConfirmacao();
+        renderAll();
+        showToast(`🔥 Todos os lançamentos de <b>${MONTH_FULL[mesAlvo]}</b> foram apagados!`, "rose");
+      };
+
+      document.getElementById("modal-confirmar-exclusao").classList.remove("hidden");
+    }
+
+    function solicitarLimpezaPorFiltroMes(statusAlvo) {
+      const mesAlvo = document.getElementById("select-mes-limpeza")?.value || activeMonth;
+      const lista = appData.lancamentosPorMes[mesAlvo] || [];
+      const alvoItens = lista.filter(x => x.status === statusAlvo);
+      if (alvoItens.length === 0) {
+        showToast(`ℹ️ Nenhum lançamento "${statusAlvo}" em ${MONTH_FULL[mesAlvo]}.`, "amber");
+        return;
+      }
+
+      document.getElementById("confirm-modal-title").textContent = `🧹 Apagar ${alvoItens.length} lançamento(s) "${statusAlvo}" de ${MONTH_FULL[mesAlvo]}?`;
+      document.getElementById("confirm-modal-subtitle").textContent = `Os demais lançamentos serão mantidos.`;
+      document.getElementById("confirm-modal-body").innerHTML = alvoItens.map(x => `• ${esc(x.desc)} (${formatBRL(x.valor)})`).join("<br>");
+
+      document.getElementById("btn-confirm-execute").onclick = () => {
+        appData.lancamentosPorMes[mesAlvo] = lista.filter(x => x.status !== statusAlvo);
+        selectedIds.clear();
+        activeMonth = mesAlvo;
+        saveState();
+        fecharModalConfirmacao();
+        renderAll();
+        showToast(`🧹 ${alvoItens.length} lançamento(s) "${statusAlvo}" removidos!`, "rose");
+      };
+
+      document.getElementById("modal-confirmar-exclusao").classList.remove("hidden");
+    }
+
+    function fecharModalConfirmacao() {
+      document.getElementById("modal-confirmar-exclusao").classList.add("hidden");
+      document.getElementById("btn-confirm-execute").textContent = "Sim, Apagar Agora";   // o modal também serve à reorganização
+    }
+
+    // =========================================================================
+    // POSTGRESQL REST API CLIENT & COPIAR CÓDIGO DE DEPLOY
+    // =========================================================================
+    function copiarCodigo(elementId) {
+      const text = document.getElementById(elementId)?.innerText || "";
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      showToast("📋 Código copiado para a área de transferência!", "cyan");
+    }
+
+    function getPgHeaders() {
+      const headers = { "Content-Type": "application/json" };
+      if (appData.config.pgApiKey) {
+        headers["Authorization"] = `Bearer ${appData.config.pgApiKey}`;
+        headers["apikey"] = appData.config.pgApiKey;
+      }
+      return headers;
+    }
+
+    function salvarConfigPostgres() {
+      appData.config.pgApiUrl = document.getElementById("pg-api-url").value.trim() || PG_API_PADRAO;
+      appData.config.pgApiKey = document.getElementById("pg-api-key").value.trim();
+      appData.config.pgAutoSync = document.getElementById("pg-auto-sync").checked;
+      saveState();
+      showToast("🐘 Configuração da API PostgreSQL salva!", "cyan");
+    }
+
+    async function testarConexaoPostgres() {
+      salvarConfigPostgres();
+      const baseUrl = appData.config.pgApiUrl.replace(/\/$/, "");
+      try {
+        const res = await fetch(`${baseUrl}/health`, { method: "GET", headers: getPgHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const h = await res.json();
+        const no = h.patroni_primary ? ` · nó ${h.patroni_primary.primary_node_ip} via ${h.entrypoint}` : "";
+        document.getElementById("pg-status-dot").className = "w-2 h-2 rounded-full bg-neonGreen animate-ping";
+        document.getElementById("pg-badge-status").textContent = "PostgreSQL Online";
+        document.getElementById("storage-mode-label").textContent = "PostgreSQL + Local";
+        showToast(`🐘 Conectado ao servidor PostgreSQL com sucesso!${no}`, "green");
+      } catch (err) {
+        showToast(`⚠️ API PostgreSQL offline em <b>${baseUrl}</b>. Operando em LocalStorage seguro.`, "amber");
+      }
+    }
+
+    async function enviarTudoParaPostgres() {
+      salvarConfigPostgres();
+      const baseUrl = appData.config.pgApiUrl.replace(/\/$/, "");
+      try {
+        const res = await fetch(`${baseUrl}/sync`, {
+          method: "POST",
+          headers: getPgHeaders(),
+          body: JSON.stringify(appData)
+        });
+        if (!res.ok) {
+          const corpo = await res.json().catch(() => ({}));
+          throw new Error(corpo.error || `HTTP ${res.status}`);
+        }
+        const r = await res.json();
+        const g = r.gravados || {};
+        marcarSync("ok");
+        showToast(`⬆️ Gravado no PostgreSQL: <b>${g.lancamentos ?? "?"}</b> lançamentos, <b>${g.compras ?? "?"}</b> compras, <b>${g.investimentos ?? "?"}</b> investimentos.`, "green");
+      } catch (err) {
+        marcarSync("erro", err.message);
+        showToast(`❌ Erro ao gravar no PostgreSQL (${esc(err.message)}).`, "rose");
+      }
+    }
+
+    async function puxarTudoDoPostgres() {
+      salvarConfigPostgres();
+      const baseUrl = appData.config.pgApiUrl.replace(/\/$/, "");
+      try {
+        const res = await fetch(`${baseUrl}/state`, { method: "GET", headers: getPgHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const remoteData = await res.json();
+        if (remoteData && remoteData.lancamentosPorMes) {
+          // mantem a config local (endpoint, EmailJS, preferencias) que o banco nao tenha
+          const cfgLocal = appData.config;
+          appData = { ...remoteData, config: { ...cfgLocal, ...(remoteData.config || {}), pgApiUrl: cfgLocal.pgApiUrl, pgApiKey: cfgLocal.pgApiKey } };
+          if (!Array.isArray(appData.logs)) appData.logs = [];
+          localStorage.setItem("cyberfinance_2026_v5", JSON.stringify(appData));
+          loadConfigInputs();
+          renderAll();
+          showToast("⬇️ Dados carregados diretamente do PostgreSQL!", "green");
+        }
+      } catch (err) {
+        showToast(`❌ Não foi possível carregar do PostgreSQL (${err.message}).`, "rose");
+      }
+    }
+
+    // sync automatico: junta varias alteracoes seguidas (digitacao, lote) num envio so, 1,5 s depois da ultima
+    let timerSync = null;
+    function sincronizarSilenciosoPostgres() {
+      clearTimeout(timerSync);
+      marcarSync("pendente");
+      timerSync = setTimeout(async () => {
+        const baseUrl = (appData.config.pgApiUrl || "").replace(/\/$/, "");
+        if (!baseUrl) return;
+        try {
+          const res = await fetch(`${baseUrl}/sync`, { method: "POST", headers: getPgHeaders(), body: JSON.stringify(appData) });
+          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
+          marcarSync("ok");
+        } catch (err) {
+          marcarSync("erro", err.message);
+        }
+      }, 1500);
+    }
+
+    function marcarSync(estado, detalhe) {
+      const el = document.getElementById("storage-mode-label");
+      const dot = document.getElementById("pg-status-dot");
+      if (!el) return;
+      if (estado === "pendente") { el.textContent = "Sincronizando…"; el.className = "text-neonAmber"; }
+      else if (estado === "ok") {
+        el.textContent = `PostgreSQL ✓ ${new Date().toLocaleTimeString()}`; el.className = "text-neonGreen";
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-neonGreen";
+      } else {
+        el.textContent = "PostgreSQL ✗ (local)"; el.className = "text-neonRose"; el.title = detalhe || "";
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-neonRose";
+      }
+    }
+
+    // =========================================================================
+    // EMAIL ENGINE
+    // =========================================================================
+    function dispararNotificacaoEmail(assunto, corpoTexto) {
+      const dest = appData.config.email || "jcnogueira.oliveira@gmail.com";
+      const modo = appData.config.modoEnvio || "gmail_web";
+      addLog(`Disparo de e-mail para ${dest} | Assunto: "${assunto}"`);
+
+      if (modo === "emailjs" && appData.config.ejsPubKey && appData.config.ejsService && appData.config.ejsTemplate) {
+        emailjs.init(appData.config.ejsPubKey);
+        emailjs.send(appData.config.ejsService, appData.config.ejsTemplate, {
+          to_email: dest,
+          subject: assunto,
+          message: corpoTexto
+        }).then(() => {
+          showToast(`✅ E-mail enviado automaticamente para <b>${dest}</b>!`, "green");
+        }).catch(() => {
+          abrirGmailOuMailto(dest, assunto, corpoTexto, "gmail_web");
+        });
+      } else {
+        abrirGmailOuMailto(dest, assunto, corpoTexto, modo);
+      }
+    }
+
+    function abrirGmailOuMailto(dest, assunto, corpoTexto, modo) {
+      const encSub = encodeURIComponent(assunto);
+      const encBody = encodeURIComponent(corpoTexto);
+      if (modo === "gmail_web") {
+        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(dest)}&su=${encSub}&body=${encBody}`, "_blank");
+        showToast(`📩 Janela do Gmail aberta para <b>${dest}</b>!`, "cyan");
+      } else {
+        window.location.href = `mailto:${dest}?subject=${encSub}&body=${encBody}`;
+      }
+    }
+
+    function enviarEmailItemEspecifico(id, mesRef = activeMonth) {
+      const lista = appData.lancamentosPorMes[mesRef] || [];
+      const item = lista.find(x => x.id === id);
+      if (!item) return;
+
+      const al = getAlertInfo(item);
+      const isPaid = item.status === "Pago";
+      const assunto = isPaid
+        ? `✅ [CONFIRMAÇÃO DE PAGAMENTO] ${item.desc} (${mesRef}/2026)`
+        : `🚨 [ALERTA DE VENCIMENTO: ${al.code}] ${item.desc}`;
+
+      const corpo = [
+        `Olá Caio,`,
+        ``,
+        `Notificação do sistema CyberFinance 2026:`,
+        `• Conta / Descrição: ${item.desc}`,
+        `• Categoria: ${item.cat}`,
+        `• Valor: ${formatBRL(item.valor)}`,
+        `• Vencimento: ${formatDateBR(item.venc)}`,
+        `• Status: ${al.label}`,
+        ``,
+        `— CyberFinance Command Center`
+      ].join("\n");
+
+      dispararNotificacaoEmail(assunto, corpo);
+    }
+
+    function dispararResumoAlertasEmail() {
+      const lista = appData.lancamentosPorMes[activeMonth] || [];
+      const criticos = lista.filter(item => ["ATRASADO", "VENCE HOJE", "VENCE EM BREVE"].includes(getAlertInfo(item).code));
+
+      if (criticos.length === 0) {
+        showToast(`🎉 Nenhuma conta atrasada ou próxima do vencimento em ${MONTH_FULL[activeMonth]}!`, "green");
+        return;
+      }
+
+      const totalCritico = criticos.reduce((acc, x) => acc + Number(x.valor), 0);
+      const linhas = criticos.map(item => `• [${getAlertInfo(item).code}] ${item.desc} — ${formatBRL(item.valor)} (Venc: ${formatDateBR(item.venc)})`);
+
+      dispararNotificacaoEmail(
+        `🚨 [RADAR FINANCEIRO ${activeMonth.toUpperCase()}/2026] ${criticos.length} conta(s) exigem atenção!`,
+        `Olá Caio,\n\nResumo de alertas (${formatBRL(totalCritico)}):\n\n${linhas.join("\n")}\n\n— CyberFinance Command Center`
+      );
+    }
+
+    // =========================================================================
+    // MODAL DE EDIÇÃO INDIVIDUAL DE LANÇAMENTO
+    // =========================================================================
+    function abrirModalEdicao(id) {
+      const lista = appData.lancamentosPorMes[activeMonth] || [];
+      const item = lista.find(x => x.id === id);
+      if (!item) return;
+
+      document.getElementById("edit-id").value = item.id;
+      document.getElementById("edit-mes-origem").value = activeMonth;
+      document.getElementById("edit-desc").value = item.desc;
+      garantirOpcao("edit-cat", item.cat);
+      document.getElementById("edit-cat").value = item.cat;
+      document.getElementById("edit-tipo").value = item.tipo;
+      document.getElementById("edit-valor").value = item.valor;
+      document.getElementById("edit-venc").value = item.venc;
+      document.getElementById("edit-status").value = item.status;
+      document.getElementById("edit-disparar-email").checked = false;
+
+      const selMes = document.getElementById("edit-mes-destino");
+      selMes.innerHTML = MONTHS.map(m => { const p = periodoCiclo(m);
+        return `<option value="${m}" ${m === activeMonth ? 'selected' : ''}>Ciclo ${MONTH_FULL[m]} (${fmtCurto(p.ini)}–${fmtCurto(p.fim)})</option>`; }).join("");
+      // trocar a data leva o lançamento para o ciclo da nova data (dá para mudar o ciclo à mão depois)
+      document.getElementById("edit-venc").onchange = (ev) => {
+        const m = ev.target.value && cicloDaData(ev.target.value);
+        if (m && appData.config.cicloAuto !== false) selMes.value = m;
+      };
+
+      document.getElementById("modal-editar").classList.remove("hidden");
+    }
+
+    function fecharModalEdicao() {
+      document.getElementById("modal-editar").classList.add("hidden");
+    }
+
+    function salvarEdicaoLancamento(e) {
+      e.preventDefault();
+      const id = Number(document.getElementById("edit-id").value);
+      const mesOrigem = document.getElementById("edit-mes-origem").value;
+      const mesDestino = document.getElementById("edit-mes-destino").value;
+
+      const novaDesc = document.getElementById("edit-desc").value.trim();
+      const novaCat = document.getElementById("edit-cat").value;
+      const novoTipo = document.getElementById("edit-tipo").value;
+      const novoValor = parseFloat(document.getElementById("edit-valor").value) || 0;
+      const novoVenc = document.getElementById("edit-venc").value;
+      const novoStatus = document.getElementById("edit-status").value;
+      const dispararEmailManual = document.getElementById("edit-disparar-email").checked;
+
+      const listaOrigem = appData.lancamentosPorMes[mesOrigem] || [];
+      const idx = listaOrigem.findIndex(x => x.id === id);
+      if (idx === -1) return;
+
+      const statusAnterior = listaOrigem[idx].status;
+      const itemAtualizado = { ...listaOrigem[idx], desc: novaDesc, cat: novaCat, tipo: novoTipo, valor: novoValor, venc: novoVenc, status: novoStatus };
+
+      if (mesOrigem === mesDestino) {
+        listaOrigem[idx] = itemAtualizado;
+      } else {
+        listaOrigem.splice(idx, 1);
+        if (!appData.lancamentosPorMes[mesDestino]) appData.lancamentosPorMes[mesDestino] = [];
+        appData.lancamentosPorMes[mesDestino].unshift(itemAtualizado);
+        activeMonth = mesDestino;
+      }
+
+      saveState();
+      fecharModalEdicao();
+      renderAll();
+      showToast(`✏️ Lançamento <b>${esc(novaDesc)}</b> atualizado!`, "amber");
+
+      if ((statusAnterior !== "Pago" && novoStatus === "Pago" && appData.config.autoPago) || dispararEmailManual) {
+        enviarEmailItemEspecifico(id, mesDestino);
+      }
+    }
+
+    // =========================================================================
+    // CRUD GERAL (COM SUPORTE A REPETIÇÃO / PARCELAMENTO MENSAL)
+    // =========================================================================
+    function alternarStatusPago(id) {
+      const lista = appData.lancamentosPorMes[activeMonth] || [];
+      const item = lista.find(x => x.id === id);
+      if (!item) return;
+
+      item.status = item.status === "Pago" ? "Pendente" : "Pago";
+      saveState();
+      renderAll();
+
+      if (item.status === "Pago") {
+        showToast(`✅ <b>${esc(item.desc)}</b> marcada como PAGA!`, "green");
+        if (appData.config.autoPago) enviarEmailItemEspecifico(id, activeMonth);
+      }
+    }
+
+    function excluirLancamento(id) {
+      appData.lancamentosPorMes[activeMonth] = (appData.lancamentosPorMes[activeMonth] || []).filter(x => x.id !== id);
+      selectedIds.delete(id);
+      saveState();
+      renderAll();
+      showToast("🗑️ Lançamento removido.", "rose");
+    }
+
+    function adicionarLancamento(e) {
+      e.preventDefault();
+      const desc = document.getElementById("inp-desc").value.trim();
+      const cat = document.getElementById("inp-cat").value;
+      const tipo = document.getElementById("inp-tipo").value;
+      const valor = parseFloat(document.getElementById("inp-valor").value);
+      const venc = document.getElementById("inp-venc").value;
+      const repetirMeses = parseInt(document.getElementById("inp-repetir-meses").value) || 1;
+      const jaPago = document.getElementById("inp-ja-pago").checked;
+
+      // cada ocorrência vai para o ciclo da sua data de vencimento (ou, com o ciclo automático desligado, segue os meses a partir do ativo)
+      const porCiclo = appData.config.cicloAuto !== false;
+      const startIdx = MONTHS.indexOf(activeMonth);
+      const ocorrencias = [];
+      for (let s = 0; s < repetirMeses; s++) {
+        const data = somaMeses(venc, s);
+        const mAlvo = porCiclo ? cicloDaData(data) : MONTHS[startIdx + s];
+        if (!mAlvo) break;                                   // passou de 2026
+        ocorrencias.push([mAlvo, data]);
+      }
+      if (ocorrencias.length === 0) {
+        showToast(`⚠️ O vencimento ${formatDateBR(venc)} cai fora dos ciclos de 2026.`, "amber");
+        return;
+      }
+      let primeiroId = null;
+      ocorrencias.forEach(([mAlvo, data], s) => {
+        const idGerado = novoId();
+        if (s === 0) primeiroId = idGerado;
+        const sufixo = ocorrencias.length > 1 ? ` (${s + 1}/${ocorrencias.length})` : "";
+        if (!appData.lancamentosPorMes[mAlvo]) appData.lancamentosPorMes[mAlvo] = [];
+        appData.lancamentosPorMes[mAlvo].unshift({ id: idGerado, desc: desc + sufixo, cat, tipo, valor, venc: data,
+          status: (s === 0 && jaPago) ? "Pago" : "Pendente" });
+      });
+      const mPrimeiro = ocorrencias[0][0];
+      if (mPrimeiro !== activeMonth) { selectedIds.clear(); activeMonth = mPrimeiro; }
+
+      saveState();
+      document.getElementById("form-novo-lancamento").reset();
+      document.getElementById("inp-venc").value = vencPadraoDoCiclo();
+      preencherSelectsCategoria();
+      renderAll();
+      showToast(`✨ Lançamento <b>${esc(desc)}</b> adicionado (${ocorrencias.length}x) — ciclo <b>${mPrimeiro}</b>${ocorrencias.length > 1 ? ` a <b>${ocorrencias[ocorrencias.length - 1][0]}</b>` : ""}!`, "green");
+      if (jaPago && appData.config.autoPago && primeiroId) enviarEmailItemEspecifico(primeiroId, mPrimeiro);
+    }
+
+    function atualizarCampoInvestimento(idx, campo, valor) {
+      if (campo === "ativo" || campo === "classe") appData.investimentos[idx][campo] = valor;
+      else appData.investimentos[idx][campo] = parseFloat(valor) || 0;
+      saveState();
+      renderAll();
+    }
+
+    function adicionarAtivoInvestimento(e) {
+      e.preventDefault();
+      const ativo = document.getElementById("inv-nome").value.trim();
+      const classe = document.getElementById("inv-classe").value;
+      const aplicado = parseFloat(document.getElementById("inv-aplicado").value) || 0;
+      const atual = parseFloat(document.getElementById("inv-atual").value) || 0;
+      const rendaMes = parseFloat(document.getElementById("inv-renda").value) || 0;
+
+      appData.investimentos.push({ ativo, classe, aplicado, atual, rendaMes });
+      saveState();
+      document.getElementById("form-novo-ativo").reset();
+      renderAll();
+      showToast(`💎 Ativo <b>${esc(ativo)}</b> adicionado!`, "green");
+    }
+
+    function excluirAtivoInvestimento(idx) {
+      appData.investimentos.splice(idx, 1);
+      saveState();
+      renderAll();
+    }
+
+    // =========================================================================
+    // UI NAVIGATION & RENDERING
+    // =========================================================================
+    function switchTab(tabName) {
+      ["dashboard", "lancamentos", "cartoes", "investimentos", "database", "config"].forEach(t => {
+        document.getElementById(`view-${t}`).classList.toggle("hidden", t !== tabName);
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tabName) {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-neonCyan text-obsidian shadow-md shadow-neonCyan/20 flex items-center gap-1.5";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5";
+        }
+      });
+      renderAll();
+    }
+
+    function selecionarMes(m) {
+      if (activeMonth !== m) {
+        selectedIds.clear();
+        activeMonth = m;
+        const v = document.getElementById("inp-venc");
+        if (v) v.value = vencPadraoDoCiclo();
+      }
+      renderAll();
+    }
+
+    function renderMonthBar() {
+      const container = document.getElementById("month-buttons-container");
+      const hoje = cicloAtual();
+      container.innerHTML = MONTHS.map(m => {
+        const isAct = m === activeMonth;
+        const count = (appData.lancamentosPorMes[m] || []).length;
+        const p = periodoCiclo(m);
+        return `<button onclick="selecionarMes('${m}')" title="Ciclo ${MONTH_FULL[m]}: ${fmtCurto(p.ini)} a ${fmtCurto(p.fim)}${m === hoje ? " (ciclo atual)" : ""}" class="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold transition-all flex items-center gap-1 ${
+          isAct
+            ? 'bg-neonPurple text-white shadow-md shadow-neonPurple/30 scale-105'
+            : 'bg-obsidian/60 text-slate-400 hover:text-white hover:bg-slate-800'
+        }">
+          ${m === hoje ? '<span class="ciclo-dot"></span>' : ''}
+          <span>${m}</span>
+          <span class="text-[10px] opacity-70">(${count})</span>
+        </button>`;
+      }).join("");
+
+      const selLimpeza = document.getElementById("select-mes-limpeza");
+      if (selLimpeza) {
+        selLimpeza.innerHTML = MONTHS.map(m => {
+          const c = (appData.lancamentosPorMes[m] || []).length;
+          return `<option value="${m}" ${m === activeMonth ? 'selected' : ''}>${MONTH_FULL[m]} (${c} itens)</option>`;
+        }).join("");
+      }
+
+      document.querySelectorAll(".active-month-label").forEach(el => {
+        el.textContent = activeMonth;
+      });
+    }
+
+    function getLancamentosFiltradosMesAtual() {
+      const lista = appData.lancamentosPorMes[activeMonth] || [];
+      const filtro = document.getElementById("filtro-status")?.value || "TODOS";
+      const termoBusca = (document.getElementById("busca-lancamento")?.value || "").toLowerCase();
+
+      return lista.filter(item => {
+        const matchTexto = item.desc.toLowerCase().includes(termoBusca) || item.cat.toLowerCase().includes(termoBusca);
+        if (!matchTexto) return false;
+        if (filtro === "TODOS") return true;
+        if (filtro === "ALERTA") {
+          const c = getAlertInfo(item).code;
+          return ["ATRASADO", "VENCE HOJE", "VENCE EM BREVE"].includes(c);
+        }
+        return item.status === filtro;
+      });
+    }
+
+    function calcularTotaisMes(m) {
+      const lista = appData.lancamentosPorMes[m] || [];
+      let rec = 0, des = 0, desPaga = 0, inv = 0, alertaVal = 0, alertaQtd = 0;
+      const statusCounts = { "ATRASADO": 0, "VENCE HOJE": 0, "VENCE EM BREVE": 0, "NO PRAZO": 0, "PAGO": 0 };
+
+      lista.forEach(item => {
+        const v = Number(item.valor || 0);
+        if (item.tipo === "Receita") rec += v;
+        if (item.tipo === "Despesa") {
+          des += v;
+          if (item.status === "Pago") desPaga += v;
+        }
+        if (item.tipo === "Investimento") inv += v;
+
+        if (item.tipo !== "Receita") {
+          const al = getAlertInfo(item);
+          if (statusCounts[al.code] !== undefined) statusCounts[al.code] += v;
+          if (["ATRASADO", "VENCE HOJE", "VENCE EM BREVE"].includes(al.code)) {
+            alertaVal += v;
+            alertaQtd += 1;
+          }
+        }
+      });
+
+      return { rec, des, desPaga, inv, saldo: rec - des - inv, alertaVal, alertaQtd, statusCounts };
+    }
+
+    function renderKPIsAndTables() {
+      const tMes = calcularTotaisMes(activeMonth);
+      let recAnual = 0;
+      MONTHS.forEach(m => { recAnual += calcularTotaisMes(m).rec; });
+
+      const patAtual = appData.investimentos.reduce((acc, x) => acc + Number(x.atual || 0), 0);
+
+      document.getElementById("kpi-receita-mes").textContent = formatBRL(tMes.rec);
+      document.getElementById("kpi-receita-anual").textContent = `Acumulado 2026: ${formatBRL(recAnual)}`;
+      document.getElementById("kpi-despesa-mes").textContent = formatBRL(tMes.des);
+      document.getElementById("kpi-despesa-paga").textContent = `Já Quitado: ${formatBRL(tMes.desPaga)}`;
+      document.getElementById("kpi-patrimonio").textContent = formatBRL(patAtual);
+      document.getElementById("kpi-aportes-mes").textContent = `Aporte em ${activeMonth}: ${formatBRL(tMes.inv)}`;
+      document.getElementById("kpi-alerta-valor").textContent = formatBRL(tMes.alertaVal);
+      document.getElementById("kpi-alerta-qtd").textContent = `${tMes.alertaQtd} boleto(s) exigem atenção em ${activeMonth}`;
+      document.getElementById("header-email-display").textContent = appData.config.email;
+
+      const lista = appData.lancamentosPorMes[activeMonth] || [];
+      const pendentesCriticos = lista.filter(x => {
+        const c = getAlertInfo(x).code;
+        return ["ATRASADO", "VENCE HOJE", "VENCE EM BREVE", "NO PRAZO"].includes(c) && x.status === "Pendente";
+      });
+
+      const alertListEl = document.getElementById("dashboard-alert-list");
+      if (pendentesCriticos.length === 0) {
+        alertListEl.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">🎉 Nenhuma conta pendente em ${MONTH_FULL[activeMonth]}!</div>`;
+      } else {
+        alertListEl.innerHTML = pendentesCriticos.map(item => {
+          const al = getAlertInfo(item);
+          return `
+            <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-obsidian/70 border border-slate-800 hover:border-slate-700 transition-all">
+              <div class="flex items-center gap-3">
+              ${catIcon(item.cat, "lanc", true)}
+              <div>
+                <div class="text-xs font-semibold text-white flex items-center gap-2">
+                  ${esc(item.desc)}
+                  <span class="px-2 py-0.5 text-[10px] font-mono rounded border ${al.badgeClass}">${al.label}</span>
+                </div>
+                <div class="text-[11px] text-slate-400 mt-0.5">
+                  Venc: <span class="font-mono text-slate-300">${formatDateBR(item.venc)}</span> • ${esc(item.cat)}
+                </div>
+              </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono text-xs font-bold text-white mr-1">${formatBRL(item.valor)}</span>
+                <button onclick="alternarStatusPago(${item.id})" class="px-2.5 py-1 rounded-lg bg-neonGreen/20 hover:bg-neonGreen/30 text-neonGreen border border-neonGreen/40 text-xs font-semibold">✓ Pagar</button>
+                <button onclick="abrirModalEdicao(${item.id})" class="px-2.5 py-1 rounded-lg bg-neonAmber/20 hover:bg-neonAmber/30 text-neonAmber border border-neonAmber/40 text-xs font-semibold">✏️ Editar</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      const filtrados = getLancamentosFiltradosMesAtual();
+      const tbodyLanc = document.getElementById("tbody-lancamentos");
+
+      if (filtrados.length === 0) {
+        tbodyLanc.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Nenhum lançamento encontrado para ${MONTH_FULL[activeMonth]}/2026.</td></tr>`;
+      } else {
+        tbodyLanc.innerHTML = filtrados.map(item => {
+          const al = getAlertInfo(item);
+          const isChecked = selectedIds.has(item.id);
+          const tipoColor = item.tipo === "Receita" ? "text-neonGreen" : item.tipo === "Investimento" ? "text-neonPurple" : "text-neonSky";
+          return `
+            <tr class="hover:bg-slate-800/40 transition-colors ${isChecked ? 'bg-neonCyan/10' : ''}">
+              <td class="py-3 px-3 text-center">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSelecaoItem(${item.id}, this.checked)" class="w-4 h-4 rounded bg-obsidian border-slate-600 text-neonCyan focus:ring-0 cursor-pointer" />
+              </td>
+              <td class="py-3 px-3 font-medium text-white max-w-[280px] break-words" title="${esc(item.desc)}">${esc(item.desc)}</td>
+              <td class="py-3 px-3 text-xs text-slate-300 whitespace-nowrap">${catChip(item.cat, "lanc")}</td>
+              <td class="py-3 px-3 text-center text-xs font-mono font-semibold whitespace-nowrap ${tipoColor}">${item.tipo}</td>
+              <td class="py-3 px-3 text-right font-mono font-semibold text-white whitespace-nowrap">${formatBRL(item.valor)}</td>
+              <td class="py-3 px-3 text-center font-mono text-xs text-slate-300 whitespace-nowrap">${formatDateBR(item.venc)}</td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <button onclick="alternarStatusPago(${item.id})" class="px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                  item.status === 'Pago'
+                    ? 'bg-neonGreen/20 text-neonGreen border border-neonGreen/40'
+                    : 'bg-slate-800 text-slate-300 hover:border-neonCyan border border-slate-700'
+                }">
+                  ${item.status === 'Pago' ? '✓ Pago' : '⏳ Pendente'}
+                </button>
+              </td>
+              <td class="py-3 px-3 text-center">
+                <span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-mono leading-none border ${al.badgeClass}">${al.label}</span>
+              </td>
+              <td class="py-3 px-3 text-center">
+                <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
+                  <button onclick="abrirModalEdicao(${item.id})" title="Editar" class="px-2.5 py-1 rounded-lg bg-neonAmber/20 hover:bg-neonAmber/35 text-neonAmber border border-neonAmber/40 text-xs font-semibold whitespace-nowrap">✏️<span class="hidden 2xl:inline"> Editar</span></button>
+                  <button onclick="enviarEmailItemEspecifico(${item.id})" title="${item.status === 'Pago' ? 'Enviar e-mail' : 'Enviar alerta por e-mail'}" class="px-2.5 py-1 rounded-lg bg-neonCyan/15 hover:bg-neonCyan/30 text-neonCyan border border-neonCyan/30 text-xs font-medium whitespace-nowrap">
+                    ${item.status === 'Pago' ? '📩 E-mail' : '🚨 Alerta'}
+                  </button>
+                  <button onclick="excluirLancamento(${item.id})" title="Excluir" class="px-2 py-1 rounded-lg bg-neonRose/15 hover:bg-neonRose/30 text-neonRose text-xs">🗑️</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      atualizarBarraSelecao();
+
+      const tbodyInv = document.getElementById("tbody-investimentos");
+      let totAplic = 0, totAtual = 0, totRenda = 0;
+      tbodyInv.innerHTML = appData.investimentos.map((inv, idx) => {
+        totAplic += Number(inv.aplicado);
+        totAtual += Number(inv.atual);
+        totRenda += Number(inv.rendaMes);
+        const rent = inv.aplicado > 0 ? ((inv.atual - inv.aplicado) / inv.aplicado) * 100 : 0;
+        return `
+          <tr class="hover:bg-slate-800/40">
+            <td class="py-2.5 px-2"><input type="text" value="${esc(inv.ativo)}" onchange="atualizarCampoInvestimento(${idx}, 'ativo', this.value)" class="w-full bg-obsidian border border-slate-700 rounded px-2 py-1 text-xs text-white" /></td>
+            <td class="py-2.5 px-2"><input type="text" value="${esc(inv.classe)}" onchange="atualizarCampoInvestimento(${idx}, 'classe', this.value)" class="w-full bg-obsidian border border-slate-700 rounded px-2 py-1 text-xs text-slate-300" /></td>
+            <td class="py-2.5 px-2 text-right font-mono"><input type="number" step="0.01" value="${inv.aplicado}" onchange="atualizarCampoInvestimento(${idx}, 'aplicado', this.value)" class="w-24 text-right bg-obsidian border border-slate-700 rounded px-2 py-1 text-xs text-slate-200" /></td>
+            <td class="py-2.5 px-2 text-right font-mono"><input type="number" step="0.01" value="${inv.atual}" onchange="atualizarCampoInvestimento(${idx}, 'atual', this.value)" class="w-24 text-right bg-obsidian border border-neonPurple/50 rounded px-2 py-1 text-xs text-neonPurple font-bold" /></td>
+            <td class="py-2.5 px-2 text-right font-mono text-xs ${rent >= 0 ? 'text-neonGreen' : 'text-neonRose'}">${rent >= 0 ? '+' : ''}${rent.toFixed(1)}%</td>
+            <td class="py-2.5 px-2 text-right font-mono"><input type="number" step="0.01" value="${inv.rendaMes}" onchange="atualizarCampoInvestimento(${idx}, 'rendaMes', this.value)" class="w-20 text-right bg-obsidian border border-slate-700 rounded px-2 py-1 text-xs text-neonAmber" /></td>
+            <td class="py-2.5 px-2 text-center"><button onclick="excluirAtivoInvestimento(${idx})" class="px-2 py-1 rounded bg-neonRose/15 hover:bg-neonRose/30 text-neonRose text-xs">🗑️</button></td>
+          </tr>
+        `;
+      }).join("");
+
+      const lucroTotal = totAtual - totAplic;
+      document.getElementById("inv-summary-box").innerHTML = `
+        <div class="flex justify-between"><span>Valor Aplicado:</span><strong class="font-mono">${formatBRL(totAplic)}</strong></div>
+        <div class="flex justify-between text-neonGreen"><span>Lucro Acumulado:</span><strong class="font-mono">+${formatBRL(lucroTotal)}</strong></div>
+        <div class="flex justify-between text-neonAmber"><span>Renda Passiva Estimada:</span><strong class="font-mono">${formatBRL(totRenda)} / mês</strong></div>
+      `;
+    }
+
+    // =========================================================================
+    // CHARTS ENGINE
+    // =========================================================================
+    function renderCharts() {
+      Chart.defaults.color = "#94A3B8";
+      Chart.defaults.font.family = "'Inter', sans-serif";
+
+      const seriesRec = [], seriesDes = [], seriesInv = [], seriesSaldo = [];
+      MONTHS.forEach(m => {
+        const t = calcularTotaisMes(m);
+        seriesRec.push(t.rec);
+        seriesDes.push(t.des);
+        seriesInv.push(t.inv);
+        seriesSaldo.push(t.saldo);
+      });
+
+      const ctxCombo = document.getElementById("chartAnualCombo").getContext("2d");
+      if (chartAnualInstance) chartAnualInstance.destroy();
+      chartAnualInstance = new Chart(ctxCombo, {
+        type: 'bar',
+        data: {
+          labels: MONTHS,
+          datasets: [
+            { type: 'line', label: 'Saldo Livre (R$)', data: seriesSaldo, borderColor: '#00F5D4', backgroundColor: 'rgba(0, 245, 212, 0.15)', borderWidth: 3, pointBackgroundColor: '#00F5D4', pointRadius: 4, tension: 0.35 },
+            { type: 'bar', label: 'Receitas', data: seriesRec, backgroundColor: 'rgba(16, 185, 129, 0.85)', borderRadius: 5 },
+            { type: 'bar', label: 'Despesas', data: seriesDes, backgroundColor: 'rgba(244, 63, 94, 0.85)', borderRadius: 5 },
+            { type: 'bar', label: 'Investimentos', data: seriesInv, backgroundColor: 'rgba(168, 85, 247, 0.85)', borderRadius: 5 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+            tooltip: { backgroundColor: 'rgba(11, 15, 25, 0.95)', borderColor: '#00F5D4', borderWidth: 1, callbacks: { label: (ctx) => `${ctx.dataset.label}: ${formatBRL(ctx.raw)}` } }
+          },
+          scales: {
+            x: { grid: { color: 'rgba(148, 163, 184, 0.08)' } },
+            y: { grid: { color: 'rgba(148, 163, 184, 0.08)' }, ticks: { callback: (val) => 'R$ ' + (val / 1000).toFixed(0) + 'k' } }
+          }
+        }
+      });
+
+      const tMes = calcularTotaisMes(activeMonth);
+      const stLabels = ["ATRASADO", "VENCE HOJE", "VENCE EM BREVE", "NO PRAZO", "PAGO"];
+      const stValues = stLabels.map(k => tMes.statusCounts[k] || 0);
+      const stColors = ["#F43F5E", "#FB7185", "#F59E0B", "#38BDF8", "#10B981"];
+
+      const ctxDonut = document.getElementById("chartStatusDonut").getContext("2d");
+      if (chartDonutInstance) chartDonutInstance.destroy();
+      chartDonutInstance = new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: { labels: stLabels, datasets: [{ data: stValues, backgroundColor: stColors, borderColor: '#0B0F19', borderWidth: 3, hoverOffset: 8 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${formatBRL(ctx.raw)}` } } } }
+      });
+
+      document.getElementById("donut-summary-legend").innerHTML = stLabels.map((lbl, i) => `
+        <div class="flex items-center justify-between bg-obsidian/60 px-2.5 py-1 rounded border border-slate-800/80">
+          <span class="flex items-center gap-1.5 text-[11px]"><span class="w-2.5 h-2.5 rounded-full" style="background:${stColors[i]}"></span>${lbl}</span>
+          <span class="font-mono text-[11px] font-semibold text-white">${formatBRL(stValues[i])}</span>
+        </div>
+      `).join("");
+
+      // gasto real por categoria (faturas abertas nos itens do cartão), só as que têm meta ou gasto
+      const gReal = gastosPorCategoria(activeMonth).porCat;
+      const cats = categoriasDespesa().filter(c => metaDe(c) > 0 || (gReal[c] && gReal[c].total > 0));
+      const metasVals = cats.map(c => metaDe(c));
+      const realVals = cats.map(c => Math.round((gReal[c]?.total || 0) * 100) / 100);
+
+      const ctxCat = document.getElementById("chartCategoriasBar").getContext("2d");
+      if (chartCatInstance) chartCatInstance.destroy();
+      chartCatInstance = new Chart(ctxCat, {
+        type: 'bar',
+        data: {
+          labels: cats.map(c => c.length > 22 ? c.slice(0, 22) + '…' : c),
+          datasets: [
+            { label: 'Gasto no Ciclo (R$)', data: realVals, backgroundColor: realVals.map((v, i) => v > metasVals[i] ? '#F43F5E' : catInfo(cats[i], "lanc").cor), borderRadius: 4 },
+            { label: 'Meta Limite (R$)', data: metasVals, backgroundColor: 'rgba(148, 163, 184, 0.25)', borderRadius: 4 }
+          ]
+        },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${formatBRL(ctx.raw)}` } } }, scales: { x: { grid: { color: 'rgba(148, 163, 184, 0.08)' } }, y: { grid: { display: false } } } }
+      });
+
+      const classMap = {};
+      appData.investimentos.forEach(item => { classMap[item.classe] = (classMap[item.classe] || 0) + Number(item.atual || 0); });
+      const invClasses = Object.keys(classMap);
+      const invVals = invClasses.map(k => classMap[k]);
+
+      const ctxInv = document.getElementById("chartInvestDonut").getContext("2d");
+      if (chartInvInstance) chartInvInstance.destroy();
+      chartInvInstance = new Chart(ctxInv, {
+        type: 'doughnut',
+        data: { labels: invClasses, datasets: [{ data: invVals, backgroundColor: ['#00F5D4', '#38BDF8', '#A855F7', '#10B981', '#F59E0B'], borderColor: '#0B0F19', borderWidth: 3 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${formatBRL(ctx.raw)}` } } } }
+      });
+    }
+
+    // =========================================================================
+    // SETTINGS, EXPORT/IMPORT JSON & CSV
+    // =========================================================================
+    function loadConfigInputs() {
+      document.getElementById("cfg-email").value = appData.config.email || "jcnogueira.oliveira@gmail.com";
+      document.getElementById("cfg-dias-alerta").value = appData.config.diasAlerta || 3;
+      document.getElementById("cfg-modo-envio").value = appData.config.modoEnvio || "gmail_web";
+      document.getElementById("cfg-auto-pago").checked = !!appData.config.autoPago;
+      document.getElementById("cfg-auto-vencimento").checked = !!appData.config.autoVencimento;
+      document.getElementById("cfg-ejs-pubkey").value = appData.config.ejsPubKey || "";
+      document.getElementById("cfg-ejs-service").value = appData.config.ejsService || "";
+      document.getElementById("cfg-ejs-template").value = appData.config.ejsTemplate || "";
+
+      document.getElementById("pg-api-url").value = appData.config.pgApiUrl || PG_API_PADRAO;
+      document.getElementById("pg-api-key").value = appData.config.pgApiKey || "";
+      document.getElementById("pg-auto-sync").checked = !!appData.config.pgAutoSync;
+      document.getElementById("cfg-ciclo-dia").value = cicloDia();
+      document.getElementById("cfg-ciclo-auto").checked = appData.config.cicloAuto !== false;
+    }
+
+    function salvarConfigEmail() {
+      appData.config.email = document.getElementById("cfg-email").value.trim() || "jcnogueira.oliveira@gmail.com";
+      appData.config.diasAlerta = parseInt(document.getElementById("cfg-dias-alerta").value) || 3;
+      appData.config.modoEnvio = document.getElementById("cfg-modo-envio").value;
+      appData.config.autoPago = document.getElementById("cfg-auto-pago").checked;
+      appData.config.autoVencimento = document.getElementById("cfg-auto-vencimento").checked;
+      appData.config.ejsPubKey = document.getElementById("cfg-ejs-pubkey").value.trim();
+      appData.config.ejsService = document.getElementById("cfg-ejs-service").value.trim();
+      appData.config.ejsTemplate = document.getElementById("cfg-ejs-template").value.trim();
+
+      saveState();
+      renderAll();
+      showToast(`💾 Configurações salvas para <b>${esc(appData.config.email)}</b>!`, "green");
+    }
+
+    function testarEnvioEmail() {
+      salvarConfigEmail();
+      dispararNotificacaoEmail(
+        "⚡ [TESTE CYBERFINANCE] Configuração de E-mail Ativa!",
+        `Olá Caio,\n\nSeu painel web CyberFinance 2026 está configurado para enviar alertas de vencimento e confirmações de pagamento para ${appData.config.email}.\n\n— CyberFinance Command Center`
+      );
+    }
+
+    function renderLogs() {
+      const box = document.getElementById("email-log-box");
+      if (!box) return;
+      box.innerHTML = (appData.logs || []).map(l => `<div class="border-b border-slate-800/60 pb-1">${esc(l)}</div>`).join("");
+    }
+
+    function exportarDadosJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+      const a = document.createElement("a");
+      a.setAttribute("href", dataStr);
+      a.setAttribute("download", "cyberfinance_backup_2026.json");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast("⬇️ Backup JSON exportado!", "cyan");
+    }
+
+    function importarDadosJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported && imported.lancamentosPorMes) {
+            appData = imported;
+            saveState();
+            loadConfigInputs();
+            renderAll();
+            showToast("⬆️ Backup JSON importado com sucesso!", "green");
+          }
+        } catch (err) {
+          showToast("❌ Arquivo JSON inválido!", "rose");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function exportarCSV() {
+      const lista = appData.lancamentosPorMes[activeMonth] || [];
+      const header = ["ID;Ciclo;Descricao;Categoria;Tipo;Valor;Vencimento;Status;Alerta"];
+      const rows = lista.map(item => {
+        const al = getAlertInfo(item).code;
+        return `${item.id};${activeMonth};"${item.desc}";"${item.cat}";${item.tipo};${String(item.valor).replace('.', ',')};${item.venc};${item.status};${al}`;
+      });
+      const csvContent = "data:text/csv;charset=utf-8,﻿" + encodeURIComponent(header.concat(rows).join("\n"));
+      const a = document.createElement("a");
+      a.setAttribute("href", csvContent);
+      a.setAttribute("download", `CyberFinance_${activeMonth}_2026.csv`);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast(`📥 Planilha CSV de ${MONTH_FULL[activeMonth]} exportada!`, "cyan");
+    }
+
+    function resetarDadosPadrao() {
+      localStorage.removeItem("cyberfinance_2026_v5");
+      selectedIds.clear();
+      appData = getInitialState();
+      saveState();
+      loadConfigInputs();
+      renderAll();
+      showToast("🔄 Dados de demonstração restaurados!", "cyan");
+    }
+
+    // =========================================================================
+    // GASTO REAL POR CATEGORIA (fatura do cartão aberta nos itens, sem contar duas vezes)
+    // =========================================================================
+    function gastosPorCategoria(m) {
+      const porCat = {};
+      const soma = (cat, desc, valor, origem, catOrigem) => {
+        const c = (porCat[cat] ||= { total: 0, itens: [] });
+        c.total += valor; c.itens.push({ desc, valor, origem, catOrigem });
+      };
+      const compras = appData.comprasCartaoPorMes[m] || [];
+      const cartoesComItens = new Set(compras.map(c => c.cartao));
+      (appData.lancamentosPorMes[m] || []).forEach(x => {
+        if (x.tipo !== "Despesa") return;
+        // fatura unificada de um cartão que tem os itens lançados: conta pelos itens, não pela fatura
+        if (x.cartaoUnificado && cartoesComItens.has(x.cartaoUnificado)) return;
+        soma(x.cat, x.desc, Number(x.valor || 0), "lanc", x.cat);
+      });
+      compras.forEach(c => {
+        const real = catInfo(c.cat, "cartao").real || "Outras Despesas";
+        soma(real, `${c.item} · ${c.cartao}`, Number(c.valorParcela || 0), "cartao", c.cat);
+      });
+      const total = Object.values(porCat).reduce((a, c) => a + c.total, 0);
+      return { porCat, total };
+    }
+
+    function renderCategoriasGrid() {
+      const { porCat, total } = gastosPorCategoria(activeMonth);
+      const nomes = [...new Set([...categoriasDespesa(), ...Object.keys(porCat)])]
+        .filter(c => (porCat[c]?.total || 0) > 0 || metaDe(c) > 0)
+        .sort((a, b) => (porCat[b]?.total || 0) - (porCat[a]?.total || 0));
+      document.getElementById("cat-grid-total").textContent = `${formatBRL(total)} em ${nomes.filter(c => porCat[c]).length} categorias`;
+      document.getElementById("grid-categorias").innerHTML = nomes.map(nome => {
+        const c = catInfo(nome, "lanc"), g = porCat[nome]?.total || 0, meta = metaDe(nome);
+        const pct = meta > 0 ? Math.round(g / meta * 100) : null;
+        const corBarra = pct === null ? c.cor : pct > 100 ? "#F43F5E" : pct >= 85 ? "#F59E0B" : c.cor;
+        const n = porCat[nome]?.itens.length || 0;
+        return `
+          <div class="cat-card bg-obsidian/70 border border-slate-800 rounded-2xl p-3.5" style="--c:${c.cor}">
+            <div class="flex items-center gap-3">
+              ${catIcon(nome, "lanc", true)}
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-semibold text-white truncate" title="${esc(nome)}">${esc(nome)}</div>
+                <div class="text-[11px] text-slate-400">${n} ${n === 1 ? "item" : "itens"}${meta > 0 ? ` · meta ${formatBRL(meta)}` : ""}</div>
+              </div>
+              ${pct !== null ? `<span class="text-[11px] font-mono font-bold" style="color:${corBarra}">${pct}%</span>` : ""}
+            </div>
+            <div class="text-lg font-bold font-mono text-white mt-2">${formatBRL(g)}</div>
+            <div class="bar-track mt-1.5"><div class="bar-fill" style="width:${Math.min(100, pct ?? (total ? g / total * 100 : 0))}%;background:${corBarra}"></div></div>
+          </div>`;
+      }).join("");
+    }
+
+    function renderGastosIT() {
+      const doCiclo = gastosPorCategoria(activeMonth).porCat[CATEGORIA_IT] || { total: 0, itens: [] };
+      const anual = MONTHS.reduce((a, m) => a + (gastosPorCategoria(m).porCat[CATEGORIA_IT]?.total || 0), 0);
+      const meta = metaDe(CATEGORIA_IT);
+      const pct = meta > 0 ? Math.round(doCiclo.total / meta * 100) : 0;
+      document.getElementById("it-ico").innerHTML = `<i data-lucide="cpu" data-emoji="💻"></i>`;
+      document.getElementById("it-total").textContent = formatBRL(doCiclo.total);
+      document.getElementById("it-sub").innerHTML = `${pct}% da meta de ${formatBRL(meta)} · acumulado 2026: <span class="font-mono text-slate-200">${formatBRL(anual)}</span>`;
+      const bar = document.getElementById("it-bar");
+      bar.style.width = `${Math.min(100, pct)}%`; bar.style.background = pct > 100 ? "#F43F5E" : pct >= 85 ? "#F59E0B" : "#22D3EE";
+      document.getElementById("it-itens").innerHTML = doCiclo.itens.length === 0
+        ? `<div class="text-[11px] text-slate-500">Nenhum gasto com IT neste ciclo.</div>`
+        : doCiclo.itens.sort((a, b) => b.valor - a.valor).map(i => `
+            <div class="flex items-center justify-between gap-2 text-[11px]">
+              <span class="flex items-center gap-2 min-w-0">${catIcon(i.catOrigem, i.origem === "cartao" ? "cartao" : "lanc")}<span class="truncate text-slate-300" title="${esc(i.desc)}">${esc(i.desc)}</span></span>
+              <span class="font-mono text-white shrink-0">${formatBRL(i.valor)}</span>
+            </div>`).join("");
+    }
+
+    function renderCiclo() {
+      const { ini, fim } = periodoCiclo(activeMonth);
+      const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+      const DIA = 86400000;
+      const dias = Math.round((fim - ini) / DIA) + 1;
+      const passados = hoje < ini ? 0 : hoje > fim ? dias : Math.round((hoje - ini) / DIA) + 1;
+      const restantes = dias - passados;
+      const estado = hoje < ini ? "futuro" : hoje > fim ? "encerrado" : "em andamento";
+      const t = calcularTotaisMes(activeMonth);
+      const aPagar = (appData.lancamentosPorMes[activeMonth] || []).filter(x => x.tipo !== "Receita" && x.status !== "Pago").reduce((a, x) => a + Number(x.valor || 0), 0);
+
+      document.getElementById("ciclo-periodo").textContent =
+        `${fmtCurto(ini)}/${ini.getFullYear()} a ${fmtCurto(fim)}/${fim.getFullYear()} · virada no dia ${cicloDia()} · ${dias} dias`;
+      const st = document.getElementById("ciclo-status");
+      st.textContent = estado === "em andamento" ? `● em andamento · faltam ${restantes} dia(s)` : estado === "futuro" ? "ciclo futuro" : "ciclo encerrado";
+      st.className = `text-[11px] font-mono px-2.5 py-1 rounded ${estado === "em andamento" ? "bg-neonCyan/15 text-neonCyan border border-neonCyan/30" : "bg-slate-800 text-slate-300"}`;
+      document.getElementById("ciclo-dias-lbl").textContent = `dia ${passados} de ${dias}`;
+      document.getElementById("ciclo-pct-lbl").textContent = `${Math.round(passados / dias * 100)}% do ciclo`;
+      document.getElementById("ciclo-bar").style.width = `${Math.round(passados / dias * 100)}%`;
+
+      const livre = t.rec - t.des - t.inv;
+      const porDia = estado === "em andamento" && restantes > 0 ? livre / restantes : null;
+      const met = [
+        ["Receitas do ciclo", formatBRL(t.rec), "text-neonGreen"],
+        ["Despesas + aportes", formatBRL(t.des + t.inv), "text-neonSky"],
+        ["Ainda a pagar", formatBRL(aPagar), aPagar > 0 ? "text-neonAmber" : "text-slate-300"],
+        porDia !== null
+          ? ["Livre por dia até o fim", formatBRL(porDia), porDia >= 0 ? "text-neonCyan" : "text-neonRose"]
+          : ["Saldo livre do ciclo", formatBRL(livre), livre >= 0 ? "text-neonCyan" : "text-neonRose"]
+      ];
+      document.getElementById("ciclo-metricas").innerHTML = met.map(([r, v, c]) => `
+        <div class="bg-obsidian/70 border border-slate-800 rounded-xl px-3 py-2">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400">${r}</div>
+          <div class="font-mono font-bold text-sm ${c} mt-0.5">${v}</div>
+        </div>`).join("");
+    }
+
+    // vencimento sugerido no formulário: hoje se estiver no ciclo ativo; senão o 1º dia do ciclo
+    function vencPadraoDoCiclo() {
+      const hoje = iso(new Date());
+      return cicloDaData(hoje) === activeMonth ? hoje : iso(periodoCiclo(activeMonth).ini);
+    }
+
+    // ---------------------------------------------------------------- configuração do ciclo e das metas
+    function renderConfigCiclo() {
+      const prev = document.getElementById("cfg-ciclo-preview");
+      if (prev) {
+        const ex = ["Jan", "Nov", "Dez"].map(m => { const p = periodoCiclo(m); return `${m}: ${fmtCurto(p.ini)}/${p.ini.getFullYear()} → ${fmtCurto(p.fim)}/${p.fim.getFullYear()}`; });
+        prev.innerHTML = `Ciclo atual: <b class="text-neonSky">${cicloAtual()}</b><br>` + ex.join("<br>");
+      }
+      const box = document.getElementById("cfg-metas");
+      if (box) box.innerHTML = categoriasDespesa().map(nome => `
+        <label class="flex items-center gap-2 bg-obsidian/70 border border-slate-800 rounded-xl px-2.5 py-1.5">
+          ${catIcon(nome, "lanc")}
+          <span class="text-[11px] text-slate-300 flex-1 truncate" title="${esc(nome)}">${esc(nome)}</span>
+          <input type="number" min="0" step="50" data-meta="${esc(nome)}" value="${metaDe(nome)}" class="w-24 text-right bg-panel border border-slate-700 rounded-lg px-2 py-1 text-xs text-white font-mono" />
+        </label>`).join("");
+    }
+
+    function salvarConfigCiclo() {
+      appData.config.cicloDia = Math.min(28, Math.max(1, parseInt(document.getElementById("cfg-ciclo-dia").value) || 15));
+      appData.config.cicloAuto = document.getElementById("cfg-ciclo-auto").checked;
+      saveState();
+      renderAll();
+      showToast(`🗓️ Ciclo salvo: virada no dia <b>${appData.config.cicloDia}</b>. Ciclo atual: <b>${cicloAtual()}</b>.`, "cyan");
+    }
+
+    function salvarMetas() {
+      const metas = {};
+      document.querySelectorAll("#cfg-metas input[data-meta]").forEach(i => { metas[i.dataset.meta] = Math.max(0, parseFloat(i.value) || 0); });
+      appData.config.metas = metas;
+      saveState();
+      renderAll();
+      showToast("🎯 Metas por categoria salvas!", "green");
+    }
+
+    // move cada lançamento para o ciclo da sua data de vencimento (as compras de cartão não têm data e ficam onde estão)
+    function solicitarReorganizarPorCiclo() {
+      const mov = [];
+      MONTHS.forEach(m => (appData.lancamentosPorMes[m] || []).forEach(x => {
+        const alvo = x.venc && cicloDaData(x.venc);
+        if (alvo && alvo !== m) mov.push({ de: m, para: alvo, item: x });
+      }));
+      if (mov.length === 0) { showToast("✅ Todos os lançamentos já estão no ciclo da sua data de vencimento.", "green"); return; }
+      document.getElementById("confirm-modal-title").textContent = `🔀 Mover ${mov.length} lançamento(s) para o ciclo do vencimento?`;
+      document.getElementById("confirm-modal-subtitle").textContent = `Virada no dia ${cicloDia()}. As compras de cartão não mudam; refaça a unificação das faturas depois, se preciso.`;
+      document.getElementById("confirm-modal-body").innerHTML = mov.slice(0, 200).map(x => `• ${x.de} → <b>${x.para}</b>: ${esc(x.item.desc)} (${formatDateBR(x.item.venc)})`).join("<br>");
+      const btn = document.getElementById("btn-confirm-execute");
+      btn.textContent = "Sim, Reorganizar";
+      btn.onclick = () => {
+        mov.forEach(({ de, para, item }) => {
+          appData.lancamentosPorMes[de] = (appData.lancamentosPorMes[de] || []).filter(x => x !== item);
+          (appData.lancamentosPorMes[para] ||= []).push(item);
+        });
+        selectedIds.clear();
+        addLog(`Reorganização pelo ciclo (virada dia ${cicloDia()}): ${mov.length} lançamento(s) movidos.`);
+        saveState();
+        fecharModalConfirmacao();
+        btn.textContent = "Sim, Apagar Agora";
+        renderAll();
+        showToast(`🔀 ${mov.length} lançamento(s) movidos para o ciclo do vencimento.`, "green");
+      };
+      document.getElementById("modal-confirmar-exclusao").classList.remove("hidden");
+    }
+
+    function renderAll() {
+      renderMonthBar();
+      renderKPIsAndTables();
+      renderCiclo();
+      renderGastosIT();
+      renderCategoriasGrid();
+      renderCartoesDashboard();
+      renderCharts();
+      renderLogs();
+      renderConfigCiclo();
+      desenharIcones();
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        fecharModalEdicao();
+        fecharModalConfirmacao();
+        fecharModalCompraCartao();
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      activeMonth = cicloAtual();                       // abre no ciclo de hoje (ex.: 06/11 com virada 15 -> Nov)
+      preencherSelectsCategoria();
+      document.getElementById("inp-cat").addEventListener("change", () => sugerirTipo("inp-cat", "inp-tipo"));
+      document.getElementById("edit-cat").addEventListener("change", () => sugerirTipo("edit-cat", "edit-tipo"));
+      document.getElementById("inp-venc").value = vencPadraoDoCiclo();
+      loadConfigInputs();
+      renderAll();
+    });
+  </script>
+</body>
+</html>
