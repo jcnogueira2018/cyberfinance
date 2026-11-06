@@ -3,9 +3,11 @@
 //   GET  /api/health  saude (aberto: usado pelo Prometheus/CMDB)      GET /metrics  metricas Prometheus (aberto, so leitura)
 //   GET  /api/state   estado completo                                  POST /api/sync estado completo -> banco (tudo ou nada)
 // API_TOKEN no .env (opcional) exige "Authorization: Bearer <token>" em /api/state e /api/sync (campo "Chave" da aba PostgreSQL).
+// Apos cada sync bem-sucedido, uma copia do estado (sem chaves de API) vai para backups/ (ultimo + historico rotativo).
 require('dotenv').config();
 const crypto = require('crypto');
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const { Pool, types } = require('pg');
 const prom = require('prom-client');
@@ -21,6 +23,8 @@ const PG_DATABASE = process.env.PG_DATABASE || 'cyberfinance';
 const PG_POOL_MAX = parseInt(process.env.PG_POOL_MAX || '15', 10);
 const API_TOKEN = process.env.API_TOKEN || '';
 const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const BACKUP_DIR = path.join(__dirname, 'backups');
+const BACKUP_HIST_MAX = 30; // quantas copias historicas do estado manter em backups/
 
 // ---------------------------------------------------------------- metricas (Prometheus)
 const reg = new prom.Registry();
@@ -36,6 +40,11 @@ const mDbLat = new prom.Gauge({ name: 'cyberfinance_db_ping_seconds', help: 'Ida
 const mPool = new prom.Gauge({ name: 'cyberfinance_db_pool_connections', help: 'Conexoes do pool por estado', labelNames: ['estado'], registers: [reg] });
 const mLinhas = new prom.Gauge({ name: 'cyberfinance_rows', help: 'Linhas por tabela', labelNames: ['tabela'], registers: [reg] });
 const mInfo = new prom.Gauge({ name: 'cyberfinance_info', help: 'Versao e entrada do PostgreSQL em uso', labelNames: ['versao', 'entrada', 'no'], registers: [reg] });
+
+// metricas financeiras (somas em R$) para o Grafana, recalculadas a cada coleta do /metrics
+const mCicloTotais = new prom.Gauge({ name: 'cyberfinance_ciclo_valor_reais', help: 'Totais por ciclo, tipo e status em R$', labelNames: ['mes_ref', 'tipo', 'status'], registers: [reg] });
+const mCatDespesa = new prom.Gauge({ name: 'cyberfinance_categoria_despesa_reais', help: 'Despesas por ciclo e categoria em R$', labelNames: ['mes_ref', 'categoria'], registers: [reg] });
+const mPatrimonio = new prom.Gauge({ name: 'cyberfinance_patrimonio_reais', help: 'Patrimonio em investimentos (aplicado, atual, renda_mes)', labelNames: ['metrica'], registers: [reg] });
 
 // ---------------------------------------------------------------- PostgreSQL (primario via HAProxy :5000)
 let activePool = null;
@@ -192,24 +201,35 @@ const numero = (v, campo) => {
 };
 const inteiro = (v, campo) => Math.trunc(numero(v, campo));
 
+// a PK e (mes_ref, id): se o front mandar id repetido dentro do mesmo mes (resquicio de migracao),
+// empurra para o proximo id livre em vez de derrubar o sync inteiro com 23505
+const idUnico = (v, vistos) => {
+  let id = inteiro(v, 'id');
+  while (vistos.has(id)) id += 1;
+  vistos.add(id);
+  return id;
+};
+
 function validaEstado(b) {
   if (!b || typeof b !== 'object') throw new ErroValidacao('corpo vazio');
   const lanc = [], cc = [], inv = [];
   for (const [mes, lista] of Object.entries(b.lancamentosPorMes || {})) {
     if (!MONTHS.includes(mes)) throw new ErroValidacao(`mês inválido: ${mes}`);
+    const idsVistos = new Set();
     for (const it of lista || []) {
       const venc = String(it.venc || '');
       if (!DATA_RE.test(venc)) throw new ErroValidacao(`vencimento inválido em ${mes}: ${venc}`);
       if (!['Receita', 'Despesa', 'Investimento'].includes(it.tipo)) throw new ErroValidacao(`tipo inválido em ${mes}: ${it.tipo}`);
       if (!['Pago', 'Pendente'].includes(it.status)) throw new ErroValidacao(`status inválido em ${mes}: ${it.status}`);
-      lanc.push([inteiro(it.id, 'id'), mes, texto(it.desc, 255, 'descrição'), texto(it.cat, 100, 'categoria'), it.tipo, numero(it.valor, 'valor'),
+      lanc.push([idUnico(it.id, idsVistos), mes, texto(it.desc, 255, 'descrição'), texto(it.cat, 100, 'categoria'), it.tipo, numero(it.valor, 'valor'),
         venc, it.status, it.cartaoUnificado ? String(it.cartaoUnificado).slice(0, 100) : null]);
     }
   }
   for (const [mes, lista] of Object.entries(b.comprasCartaoPorMes || {})) {
     if (!MONTHS.includes(mes)) throw new ErroValidacao(`mês inválido: ${mes}`);
+    const idsVistos = new Set();
     for (const c of lista || []) {
-      cc.push([inteiro(c.id, 'id'), mes, texto(c.cartao, 100, 'cartão'), texto(c.item, 255, 'item'), texto(c.cat, 100, 'categoria'),
+      cc.push([idUnico(c.id, idsVistos), mes, texto(c.cartao, 100, 'cartão'), texto(c.item, 255, 'item'), texto(c.cat, 100, 'categoria'),
         numero(c.valorParcela, 'valor da parcela'), Math.max(1, inteiro(c.parcAtual, 'parcela atual')), Math.max(1, inteiro(c.parcTotal, 'total de parcelas'))]);
     }
   }
@@ -221,6 +241,26 @@ function validaEstado(b) {
 
 // colunas -> arrays para um INSERT ... SELECT FROM unnest(...) (uma ida ao banco por tabela)
 const colunas = (linhas, n) => Array.from({ length: n }, (_, j) => linhas.map((l) => l[j]));
+
+// ---------------------------------------------------------------- backup local do estado (cinto e suspensorio: alem do banco)
+// grava backups/estado_ultimo_sync.json e uma copia datada; mantem so as BACKUP_HIST_MAX mais novas.
+// chaves de API (PostgreSQL/EmailJS) nunca vao para o arquivo: ficam so no navegador.
+function salvarBackupDisco(payload) {
+  try {
+    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    const seguro = { ...payload, config: payload.config ? { ...payload.config, pgApiKey: undefined, ejsPubKey: undefined } : {} };
+    const json = JSON.stringify(seguro, null, 2);
+    fs.writeFileSync(path.join(BACKUP_DIR, 'estado_ultimo_sync.json'), json, 'utf8');
+    const carimbo = new Date().toISOString().replace(/[:.]/g, '-'); // 2026-11-06T14-30-00-000Z
+    fs.writeFileSync(path.join(BACKUP_DIR, `estado_${carimbo}.json`), json, 'utf8');
+    const antigos = fs.readdirSync(BACKUP_DIR).filter((f) => /^estado_\d{4}-\d{2}-\d{2}T.*\.json$/.test(f)).sort();
+    for (const f of antigos.slice(0, Math.max(0, antigos.length - BACKUP_HIST_MAX))) {
+      fs.unlinkSync(path.join(BACKUP_DIR, f));
+    }
+  } catch (e) {
+    console.warn('⚠️ Falha ao salvar backup local em disco:', e.message);
+  }
+}
 
 // ---------------------------------------------------------------- app
 const app = express();
@@ -309,7 +349,7 @@ app.post('/api/sync', exigeToken, async (req, res) => {
   try {
     const e = validaEstado(req.body);
     // nunca gravar chaves de API (EmailJS / token) no banco: ficam so no navegador
-    const cfg = e.config ? { ...e.config, pgApiKey: undefined } : null;
+    const cfg = e.config ? { ...e.config, pgApiKey: undefined, ejsPubKey: undefined } : null;
     const n = await emTransacao(async (c) => {
       // um sync por vez: dois envios simultaneos (sync automatico) apagariam/inseririam por cima um do outro
       await c.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['cyberfinance_sync']);
@@ -339,11 +379,13 @@ app.post('/api/sync', exigeToken, async (req, res) => {
       }
       return { lancamentos: e.lanc.length, compras: e.cc.length, investimentos: e.inv.length };
     });
+    salvarBackupDisco(req.body); // copia local do estado gravado (sem chaves de API)
     mSync.inc({ resultado: 'ok' });
     res.json({ ok: true, primary_entrypoint: currentHostConnected, gravados: n });
   } catch (err) {
     mSync.inc({ resultado: 'erro' });
-    // 23505 = chave duplicada (mesmo id duas vezes no mesmo mes)
+    console.error(`❌ Sync falhou: ${err.message}`);
+    // 23505 = chave duplicada (mesmo id duas vezes no mesmo mes); 23514 = violacao de CHECK
     const status = err instanceof ErroValidacao || err.code === '23505' || err.code === '23514' ? 400 : 500;
     res.status(status).json({ error: err.message });
   } finally {
@@ -355,12 +397,27 @@ app.post('/api/sync', exigeToken, async (req, res) => {
 app.get('/metrics', async (req, res) => {
   try {
     const t0 = process.hrtime.bigint();
-    const r = await comCliente((c) => c.query(`SELECT (SELECT count(*) FROM fin_lancamentos) l, (SELECT count(*) FROM fin_cartoes_compras) c,
-      (SELECT count(*) FROM fin_investimentos) i`));
+    const [counts, porTipo, porCat, invTot] = await comCliente(async (c) => [
+      (await c.query(`SELECT (SELECT count(*) FROM fin_lancamentos) l, (SELECT count(*) FROM fin_cartoes_compras) c,
+        (SELECT count(*) FROM fin_investimentos) i`)).rows[0],
+      (await c.query(`SELECT mes_ref, tipo, status, COALESCE(SUM(valor), 0) AS val FROM fin_lancamentos GROUP BY mes_ref, tipo, status`)).rows,
+      (await c.query(`SELECT mes_ref, categoria, COALESCE(SUM(valor), 0) AS val FROM fin_lancamentos WHERE tipo = 'Despesa' GROUP BY mes_ref, categoria`)).rows,
+      (await c.query(`SELECT COALESCE(SUM(valor_aplicado), 0) AS a, COALESCE(SUM(saldo_atual), 0) AS s, COALESCE(SUM(renda_passiva_mes), 0) AS r FROM fin_investimentos`)).rows[0],
+    ]);
     mDbLat.set(Number(process.hrtime.bigint() - t0) / 1e9);
     mDbUp.set(1);
-    const x = r.rows[0];
-    mLinhas.set({ tabela: 'fin_lancamentos' }, Number(x.l)); mLinhas.set({ tabela: 'fin_cartoes_compras' }, Number(x.c)); mLinhas.set({ tabela: 'fin_investimentos' }, Number(x.i));
+    mLinhas.set({ tabela: 'fin_lancamentos' }, Number(counts.l));
+    mLinhas.set({ tabela: 'fin_cartoes_compras' }, Number(counts.c));
+    mLinhas.set({ tabela: 'fin_investimentos' }, Number(counts.i));
+
+    // somas financeiras: reset antes de repovoar para nao sobrar serie de ciclo que deixou de existir
+    mCicloTotais.reset();
+    for (const r of porTipo) mCicloTotais.set({ mes_ref: r.mes_ref, tipo: r.tipo, status: r.status }, Number(r.val));
+    mCatDespesa.reset();
+    for (const r of porCat) mCatDespesa.set({ mes_ref: r.mes_ref, categoria: r.categoria }, Number(r.val));
+    mPatrimonio.set({ metrica: 'aplicado' }, Number(invTot.a));
+    mPatrimonio.set({ metrica: 'atual' }, Number(invTot.s));
+    mPatrimonio.set({ metrica: 'renda_mes' }, Number(invTot.r));
   } catch (err) {
     mDbUp.set(0);
   }
@@ -369,6 +426,16 @@ app.get('/metrics', async (req, res) => {
   }
   res.set('Content-Type', reg.contentType);
   res.end(await reg.metrics());
+});
+
+// rota /api/* desconhecida -> 404 em JSON (em vez da pagina de erro HTML do Express)
+app.use('/api', (req, res) => res.status(404).json({ error: `rota não encontrada: ${req.method} ${req.path}` }));
+
+// corpo JSON invalido no POST -> 400 legivel (em vez de stack trace HTML)
+app.use((err, req, res, next) => {
+  if (err && err.type === 'entity.parse.failed') return res.status(400).json({ error: 'JSON inválido no corpo da requisição' });
+  if (err && err.type === 'entity.too.large') return res.status(413).json({ error: 'corpo da requisição grande demais (limite 10 MB)' });
+  next(err);
 });
 
 const PORT = process.env.PORT || 3030;

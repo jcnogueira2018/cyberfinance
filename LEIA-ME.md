@@ -26,6 +26,14 @@ Front + API na mesma porta (**3030**), banco `cyberfinance` no PostgreSQL 17 Pat
 - CMDB: CI "CyberFinance" (app) → depende de "PostgreSQL cyberfinance" → faz parte do "PostgreSQL Patroni (cluster)"; sessão web;
   credencial no cofre (pasta ".env das ferramentas"). Atualizar: `node tools\cmdb-web\scripts\atualiza_cyberfinance.js --aplicar`.
 
+## 1.3 (06/11/2026)
+- Métricas financeiras no `/metrics` para o Grafana: `cyberfinance_ciclo_valor_reais` (totais por mês/tipo/status),
+  `cyberfinance_categoria_despesa_reais` (despesas por mês/categoria) e `cyberfinance_patrimonio_reais` (aplicado, atual, renda/mês).
+- Backup local do estado a cada sync bem-sucedido: `backups/estado_ultimo_sync.json` + histórico datado (mantém os 30 mais novos),
+  sempre sem chaves de API.
+- Sync tolera id duplicado dentro do mesmo mês (empurra para o próximo id livre em vez de falhar com 23505).
+- `/api/*` desconhecida responde 404 em JSON; corpo JSON inválido no POST responde 400 legível; falha de sync registra log no console.
+
 ## 1.1 (30/10/2026)
 - Servidor: `/metrics`, token opcional, gravação em lote (`unnest`, 121 lançamentos em ~20 ms), validação (400 com a mensagem),
   `/api/health` 503 quando o banco cai, parada limpa, cabeçalhos de segurança; a chave de API do navegador nunca é gravada no banco.
